@@ -98,6 +98,8 @@ class Metrics(object):
         metrics['bytes_read'] = self.bytes_read
         metrics_dir = os.path.join('out', self.params['dataset'], 'metrics_{}_{}_{}_{}_{}.json'.format(self.params['seed'], self.params['optimizer'], self.params['learning_rate'], self.params['num_epochs'], self.params['mu']))
 	#os.mkdir(os.path.join('out', self.params['dataset']))
+        if not os.path.exists('out'):
+            os.mkdir('out')
         if not os.path.exists(os.path.join('out', self.params['dataset'])):
             os.mkdir(os.path.join('out', self.params['dataset']))
         with open(metrics_dir, 'w') as ouf:
