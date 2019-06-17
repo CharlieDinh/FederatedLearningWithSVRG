@@ -2,6 +2,7 @@ import json
 import numpy as np
 import os
 
+
 def batch_data(data, batch_size):
     '''
     data is a dict := {'x': [numpy array], 'y': [numpy array]} (on one client)
@@ -23,6 +24,7 @@ def batch_data(data, batch_size):
         batched_y = data_y[i:i+batch_size]
         yield (batched_x, batched_y)
 
+
 def read_data(train_data_dir, test_data_dir):
     '''parses data in given train and test data directories
 
@@ -30,7 +32,7 @@ def read_data(train_data_dir, test_data_dir):
     - the data in the input directories are .json files with 
         keys 'users' and 'user_data'
     - the set of train set users is the same as the set of test set users
-    
+
     Return:
         clients: list of client ids
         groups: list of group ids; empty list if none found
@@ -45,7 +47,7 @@ def read_data(train_data_dir, test_data_dir):
     train_files = os.listdir(train_data_dir)
     train_files = [f for f in train_files if f.endswith('.json')]
     for f in train_files:
-        file_path = os.path.join(train_data_dir,f)
+        file_path = os.path.join(train_data_dir, f)
         with open(file_path, 'r') as inf:
             cdata = json.load(inf)
         clients.extend(cdata['users'])
@@ -56,7 +58,7 @@ def read_data(train_data_dir, test_data_dir):
     test_files = os.listdir(test_data_dir)
     test_files = [f for f in test_files if f.endswith('.json')]
     for f in test_files:
-        file_path = os.path.join(test_data_dir,f)
+        file_path = os.path.join(test_data_dir, f)
         with open(file_path, 'r') as inf:
             cdata = json.load(inf)
         test_data.update(cdata['user_data'])
@@ -72,7 +74,7 @@ class Metrics(object):
         num_rounds = params['num_rounds']
         self.bytes_written = {c.id: [0] * num_rounds for c in clients}
         self.client_computations = {c.id: [0] * num_rounds for c in clients}
-        self.bytes_read = {c.id: [0] * num_rounds for c in clients}      
+        self.bytes_read = {c.id: [0] * num_rounds for c in clients}
         self.accuracies = []
         self.train_accuracies = []
 
@@ -96,8 +98,9 @@ class Metrics(object):
         metrics['client_computations'] = self.client_computations
         metrics['bytes_written'] = self.bytes_written
         metrics['bytes_read'] = self.bytes_read
-        metrics_dir = os.path.join('out', self.params['dataset'], 'metrics_{}_{}_{}_{}_{}.json'.format(self.params['seed'], self.params['optimizer'], self.params['learning_rate'], self.params['num_epochs'], self.params['mu']))
-	#os.mkdir(os.path.join('out', self.params['dataset']))
+        metrics_dir = os.path.join('out', self.params['dataset'], 'metrics_{}_{}_{}_{}_{}.json'.format(
+            self.params['seed'], self.params['optimizer'], self.params['learning_rate'], self.params['num_epochs'], self.params['mu']))
+        #os.mkdir(os.path.join('out', self.params['dataset']))
         if not os.path.exists('out'):
             os.mkdir('out')
         if not os.path.exists(os.path.join('out', self.params['dataset'])):
