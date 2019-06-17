@@ -97,10 +97,26 @@ class Model(object):
             # print("Full dataset")
             batch_size = len(data['y'])
 
+        # get w0
+        wzero = self.get_params()
+
         # for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
         for _ in range(num_epochs):
             for X, y in batch_data(data, batch_size):
                 with self.graph.as_default():
+                    # get the current weight
+                    current_weight = self.get_params()
+
+                    # calculate fw0 first:
+                    self.set_params(wzero)
+                    fwzero = self.sess.run(self.grads,
+                                           feed_dict={self.features: X, self.labels: y})
+                    fwzero = process_grad(fwzero)
+                    self.optimizer.set_fwzero(fwzero, self)
+
+                    # return the current weight to the model
+                    self.set_params(current_weight)
+
                     self.sess.run(self.train_op,
                                   feed_dict={self.features: X, self.labels: y})
         soln = self.get_params()
