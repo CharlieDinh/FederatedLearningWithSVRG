@@ -31,8 +31,8 @@ class SVRG(optimizer.Optimizer):
         f_w_0 = self.get_slot(var, "f_w_0")
         vzero = self.get_slot(var, "vzero")
         v_n_s = grad - f_w_0 + vzero
-        #var_update = state_ops.assign_sub(var, tf_utils.prox_L2(v_n_s,0.001))
-        var_update = state_ops.assign_sub(var, v_n_s)
+        prox = tf_utils.prox_L2(var - lr_t * v_n_s, 0.001)
+        var_update = state_ops.assign(var, prox)
 
         return control_flow_ops.group(*[var_update, ])
 
