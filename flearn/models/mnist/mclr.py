@@ -17,6 +17,8 @@ class Model(object):
         # params
         self.num_classes = num_classes
 
+        self.optimizer = optimizer
+
         # create computation graph
         self.graph = tf.Graph()
         with self.graph.as_default():
@@ -111,7 +113,7 @@ class Model(object):
                     self.set_params(wzero)
                     fwzero = self.sess.run(self.grads,
                                            feed_dict={self.features: X, self.labels: y})
-                    fwzero = process_grad(fwzero)
+
                     self.optimizer.set_fwzero(fwzero, self)
 
                     # return the current weight to the model
