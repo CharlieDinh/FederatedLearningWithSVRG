@@ -84,6 +84,25 @@ def cosine_sim(a, b):
     norm_b = np.linalg.norm(b)
     return dot_product * 1.0 / (norm_a * norm_b)  
 
+def prox_L2(w, lam):
+    norm_w = np.linalg.norm(w)
+    if(lam > norm_w):
+        return 0
+    else:
+        return (1 - lam/norm_w)*w
+
+def prox_l1(w, lamb):
+    '''
+    Parameters
+    ----------
+    @param w : input vector
+    @param lamb : penalty paramemeter
+        
+    Returns
+    -------
+    @retval : perform soft-thresholding on input vector
+    '''
+    return tf.multiply(tf.sign(w),tf.maximum(tf.abs(w) - lamb,0) )
 
 
 

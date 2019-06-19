@@ -4,7 +4,7 @@ from tensorflow.python.ops import state_ops
 from tensorflow.python.framework import ops
 from tensorflow.python.training import optimizer
 import tensorflow as tf
-
+import flearn.utils.tf_utils as tf_utils
 
 class SVRG(optimizer.Optimizer):
     """Implementation of Perturbed Gradient Descent, i.e., FedProx optimizer"""
@@ -30,7 +30,7 @@ class SVRG(optimizer.Optimizer):
         f_w_0 = self.get_slot(var, "f_w_0")
         vzero = self.get_slot(var, "vzero")
         v_n_s = grad - f_w_0 + vzero
-        var_update = state_ops.assign_sub(var, lr_t*(grad + (var-f_w_0)))
+        var_update = state_ops.assign_sub(var, tf_utils.prox_L2(v_n_s,0.001))
 
         return control_flow_ops.group(*[var_update, ])
 
