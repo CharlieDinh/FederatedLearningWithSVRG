@@ -9,23 +9,18 @@ import tensorflow as tf
 class SVRG(optimizer.Optimizer):
     """Implementation of Perturbed Gradient Descent, i.e., FedProx optimizer"""
 
-    def __init__(self, learning_rate=0.001, mu=0.01, use_locking=False, name="SVRG"):
+    def __init__(self, learning_rate=0.001, use_locking=False, name="SVRG"):
         super(SVRG, self).__init__(use_locking, name)
         self._lr = learning_rate
-        self._mu = mu
-
         # Tensor versions of the constructor arguments, created in _prepare().
         self._lr_t = None
-        self._mu_t = None
 
     def _prepare(self):
         self._lr_t = ops.convert_to_tensor(self._lr, name="learning_rate")
-        self._mu_t = ops.convert_to_tensor(self._mu, name="prox_mu")
 
     def _create_slots(self, var_list):
         # Create slots for the global solution.
         for v in var_list:
-            self._zeros_slot(v, "vstar", self._name)
             self._zeros_slot(v, "vzero", self._name)
             self._zeros_slot(v, "f_w_0", self._name)
 

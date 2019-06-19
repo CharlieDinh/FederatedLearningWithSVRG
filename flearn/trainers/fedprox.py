@@ -3,7 +3,7 @@ from tqdm import trange, tqdm
 import tensorflow as tf
 
 from .fedbase import BaseFedarated
-from flearn.optimizer.pgd import PerturbedGradientDescent
+from flearn.optimizer.pgd import SVRG
 from flearn.utils.tf_utils import process_grad, process_sparse_grad
 
 #WEIGHTED = False
@@ -12,8 +12,7 @@ from flearn.utils.tf_utils import process_grad, process_sparse_grad
 class Server(BaseFedarated):
     def __init__(self, params, learner, dataset):
         print('Using Federated prox to Train')
-        self.inner_opt = PerturbedGradientDescent(
-            params['learning_rate'], params['mu'])
+        self.inner_opt = SVRG(params['learning_rate'])
         #self.seed = 1
         super(Server, self).__init__(params, learner, dataset)
 
