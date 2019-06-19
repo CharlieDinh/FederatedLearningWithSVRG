@@ -25,7 +25,7 @@ class Client(object):
         return self.model.get_gradients(self.train_data, model_len)
 
     def get_raw_grads(self):
-        return self.model.get_raw_gradients(self.train_data))
+        return self.model.get_raw_gradients(self.train_data)
 
     def solve_grad(self):
         '''get model gradient with cost'''

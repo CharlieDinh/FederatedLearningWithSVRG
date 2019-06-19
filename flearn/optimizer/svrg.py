@@ -26,11 +26,12 @@ class SVRG(optimizer.Optimizer):
 
     def _apply_dense(self, grad, var):
         lr_t = math_ops.cast(self._lr_t, var.dtype.base_dtype)
-        mu_t = math_ops.cast(self._mu_t, var.dtype.base_dtype)
+        #mu_t = math_ops.cast(self._mu_t, var.dtype.base_dtype)
         f_w_0 = self.get_slot(var, "f_w_0")
         vzero = self.get_slot(var, "vzero")
         v_n_s = grad - f_w_0 + vzero
-        var_update = state_ops.assign_sub(var, tf_utils.prox_L2(v_n_s,0.001))
+        #var_update = state_ops.assign_sub(var, tf_utils.prox_L2(v_n_s,0.001))
+        var_update = state_ops.assign_sub(var, v_n_s)
 
         return control_flow_ops.group(*[var_update, ])
 

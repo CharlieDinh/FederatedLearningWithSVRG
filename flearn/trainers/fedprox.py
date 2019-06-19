@@ -3,7 +3,7 @@ from tqdm import trange, tqdm
 import tensorflow as tf
 
 from .fedbase import BaseFedarated
-from flearn.optimizer.pgd import SVRG
+from flearn.optimizer.svrg import SVRG
 from flearn.utils.tf_utils import process_grad, process_sparse_grad
 
 #WEIGHTED = False
