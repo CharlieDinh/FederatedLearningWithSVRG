@@ -2,12 +2,13 @@ import numpy as np
 
 import tensorflow as tf
 
+
 def __num_elems(shape):
     '''Returns the number of elements in the given shape
 
     Args:
         shape: TensorShape
-    
+
     Return:
         tot_elems: int
     '''
@@ -15,6 +16,7 @@ def __num_elems(shape):
     for s in shape:
         tot_elems *= int(s)
     return tot_elems
+
 
 def graph_size(graph):
     '''Returns the size of the given graph in bytes
@@ -39,6 +41,7 @@ def graph_size(graph):
             tot_size += var_size
     return tot_size
 
+
 def process_sparse_grad(grads):
     '''
     Args:
@@ -48,17 +51,18 @@ def process_sparse_grad(grads):
     '''
 
     indices = grads[0].indices
-    values =  grads[0].values
-    first_layer_dense = np.zeros((80,8))
+    values = grads[0].values
+    first_layer_dense = np.zeros((80, 8))
     for i in range(indices.shape[0]):
         first_layer_dense[indices[i], :] = values[i, :]
 
     client_grads = first_layer_dense
     for i in range(1, len(grads)):
-        client_grads = np.append(client_grads, grads[i]) # output a flattened array
-
+        # output a flattened array
+        client_grads = np.append(client_grads, grads[i])
 
     return client_grads
+
 
 def process_grad(grads):
     '''
@@ -71,18 +75,20 @@ def process_grad(grads):
     client_grads = grads[0]
 
     for i in range(1, len(grads)):
-        client_grads = np.append(client_grads, grads[i]) # output a flattened array
-
+        # output a flattened array
+        client_grads = np.append(client_grads, grads[i])
 
     return client_grads
 
+
 def cosine_sim(a, b):
     '''Returns the cosine similarity between two arrays a and b
-    '''  
+    '''
     dot_product = np.dot(a, b)
     norm_a = np.linalg.norm(a)
     norm_b = np.linalg.norm(b)
-    return dot_product * 1.0 / (norm_a * norm_b)  
+    return dot_product * 1.0 / (norm_a * norm_b)
+
 
 def prox_L2(w, lam):
     norm_w = np.linalg.norm(w)
@@ -91,18 +97,16 @@ def prox_L2(w, lam):
     else:
         return (1 - lam/norm_w)*w
 
+
 def prox_l1(w, lamb):
     '''
     Parameters
     ----------
     @param w : input vector
     @param lamb : penalty paramemeter
-        
+
     Returns
     -------
     @retval : perform soft-thresholding on input vector
     '''
-    return tf.multiply(tf.sign(w),tf.maximum(tf.abs(w) - lamb,0) )
-
-
-
+    return tf.multiply(tf.sign(w), tf.maximum(tf.abs(w) - lamb, 0))

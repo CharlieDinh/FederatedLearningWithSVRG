@@ -6,6 +6,7 @@ from tensorflow.python.training import optimizer
 import tensorflow as tf
 import flearn.utils.tf_utils as tf_utils
 
+
 class SVRG(optimizer.Optimizer):
     """Implementation of Perturbed Gradient Descent, i.e., FedProx optimizer"""
 
