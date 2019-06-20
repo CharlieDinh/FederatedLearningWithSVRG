@@ -93,16 +93,15 @@ def cosine_sim(a, b):
 def prox_L2(w, lam):
     norm = tf.norm(w)
 
-    tf_lam = tf.Variable(lam)
+    #tf_lam = tf.Variable(lam)
 
-    zero = tf.constant(0.0)
-    y = tf.constant(5)
+    # zero = tf.zeros_like(w)
 
-    def f1(): return zero
+    def f1(): return 0 * w
 
-    def f2(): return w * (1 - tf_lam / norm)
+    def f2(): return w * (1 - lam / norm)
 
-    return tf.cond(tf.less(norm, tf_lam), f1, f2)
+    return tf.cond(tf.less(norm, lam), f1, f2)
 
 
 def prox_l1(w, lamb):
