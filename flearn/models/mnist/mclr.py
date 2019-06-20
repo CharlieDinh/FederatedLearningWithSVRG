@@ -103,7 +103,8 @@ class Model(object):
         wzero = self.get_params()
 
         # for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
-        for _ in range(num_epochs):
+        earlystop = np.random.randint(0, num_epochs+1)
+        for _ in range(num_epochs): # t = 1,2,3,4,5,...m
             for X, y in batch_data(data, batch_size):
                 with self.graph.as_default():
                     # get the current weight
@@ -121,6 +122,8 @@ class Model(object):
 
                     self.sess.run(self.train_op,
                                   feed_dict={self.features: X, self.labels: y})
+            if(_ == earlystop):
+                break
         soln = self.get_params()
 
         comp = num_epochs * \
