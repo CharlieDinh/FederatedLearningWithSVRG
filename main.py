@@ -202,6 +202,9 @@ if __name__ == '__main__':
     if(SUMARRY):
         plot_summary(loc_ep1=5, loc_ep2=20)
     else:
-       main(num_users=20, loc_ep=30, alg='fedsarah', weight=True)  # 'fedavg', 'fedprox'
-       #main(num_users=20, loc_ep=30, alg='fedsvrg', weight=True)
+       main(num_users=20, loc_ep=30, alg='fedsvrg', weight=True)  # 'fedavg', 'fedprox'
+       main(num_users=20, loc_ep=30, alg='fedsarah', weight=True)
+       main(num_users=20, loc_ep=30, alg='fedsgd', weight=True)
+       main(num_users=20, loc_ep=30, alg='fedavg', weight=True)
+       main(num_users=20, loc_ep=30, alg='fedsvrg', weight=True)
        print("-- FINISH -- :",)

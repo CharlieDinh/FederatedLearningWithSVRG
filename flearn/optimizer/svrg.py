@@ -8,7 +8,7 @@ import flearn.utils.tf_utils as tf_utils
 
 
 class SVRG(optimizer.Optimizer):
-    """Implementation of Perturbed Gradient Descent, i.e., FedProx optimizer"""
+    """Implementation of Proximal SVRG, i.e., FedProx optimizer"""
 
     def __init__(self, learning_rate=0.001, use_locking=False, name="SVRG"):
         super(SVRG, self).__init__(use_locking, name)
