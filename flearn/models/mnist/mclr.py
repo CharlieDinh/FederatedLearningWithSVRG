@@ -122,15 +122,23 @@ class Model(object):
                         self.set_params(current_weight)
                         self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
                     elif(optimizer == "fedsarah"):
-                        if( _ == 0):
-                            current_weight = self.get_params()
-                            self.set_params(wzero)
+                        if(_ == 0):  
                             firstGrad = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})
+                            # update gradient of w_0
                             self.optimizer.set_preG(firstGrad, self)
-                            self.set_params(current_weight)
-                            #self.optimizer.set_preG(curGrad, self)
-                        self.sess.run(self.train_op, feed_dict={
+                            self.sess.run(self.train_op, feed_dict={
+                                
                                           self.features: X, self.labels: y})
+                            currentGrad = self.sess.run(self.grads, feed_dict={
+                                                        self.features: X, self.labels: y})
+                        else: 
+                            # update previous gradient
+                            self.optimizer.set_preG(currentGrad, self)
+                            self.sess.run(self.train_op, feed_dict={
+                                      self.features: X, self.labels: y})
+                                      
+                            currentGrad = self.sess.run(self.grads, feed_dict={
+                            self.features: X, self.labels: y})
                     else:
                         self.sess.run(self.train_op, feed_dict={
                                       self.features: X, self.labels: y})
