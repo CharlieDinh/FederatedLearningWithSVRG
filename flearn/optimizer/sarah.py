@@ -27,10 +27,10 @@ class SARAH(optimizer.Optimizer):
 
     def _apply_dense(self, grad, var):
         lr_t = math_ops.cast(self._lr_t, var.dtype.base_dtype)
-        #mu_t = math_ops.cast(self._mu_t, var.dtype.base_dtype)
-        f_w_0 = self.get_slot(var, "vzero")
-        vzero = self.get_slot(var, "preG")
-        v_n_s = grad - f_w_0 + vzero
+
+        vzero = self.get_slot(var, "vzero")
+        preG = self.get_slot(var, "preG")
+        v_n_s = grad - preG + vzero
         prox = tf_utils.prox_L2(var - lr_t * v_n_s, 0.001)
         var_update = state_ops.assign(var, prox)
 

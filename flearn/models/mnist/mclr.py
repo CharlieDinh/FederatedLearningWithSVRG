@@ -128,10 +128,9 @@ class Model(object):
                             firstGrad = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})
                             self.optimizer.set_preG(firstGrad, self)
                             self.set_params(current_weight)
-                            curGrad = self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
-                        else:
-                            self.optimizer.set_preG(curGrad, self)
-                            curGrad = self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
+                            #self.optimizer.set_preG(curGrad, self)
+                        self.sess.run(self.train_op, feed_dict={
+                                          self.features: X, self.labels: y})
                     else:
                         self.sess.run(self.train_op, feed_dict={
                                       self.features: X, self.labels: y})
