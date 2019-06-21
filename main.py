@@ -12,9 +12,8 @@ import h5py
 
 
 # GLOBAL PARAMETERS
-OPTIMIZERS = ['fedavg', 'fedprox', 'feddane', 'fedddane', 'fedsgd']
-DATASETS = ['sent140', 'nist', 'shakespeare', 'mnist', 
-'synthetic_iid', 'synthetic_0_0', 'synthetic_0.5_0.5', 'synthetic_1_1']  # NIST is EMNIST in the paepr
+OPTIMIZERS = ['fedavg', 'fedprox', 'fedsvrg', 'fedsarah', 'fedsgd']
+DATASETS = ['sent140', 'nist', 'shakespeare', 'mnist', 'synthetic_iid', 'synthetic_0_0', 'synthetic_0.5_0.5', 'synthetic_1_1']  # NIST is EMNIST in the paepr
 
 
 MODEL_PARAMS = {
@@ -29,7 +28,7 @@ MODEL_PARAMS = {
 }
 
 
-def read_options(num_users=5, loc_ep=10, alg='fedprox', weight = False):
+def read_options(num_users=5, loc_ep=10, alg='fedprox', weight = True):
     ''' Parse command line arguments or load defaults '''
     parser = argparse.ArgumentParser()
 
@@ -123,7 +122,7 @@ def read_options(num_users=5, loc_ep=10, alg='fedprox', weight = False):
     return parsed, learner, optimizer
 
 
-def main(num_users=5, loc_ep=10, alg='fedprox', weight = False):
+def main(num_users=5, loc_ep=10, alg='fedprox', weight = True):
     # suppress tf warnings
     tf.logging.set_verbosity(tf.logging.WARN)
     
@@ -140,7 +139,7 @@ def main(num_users=5, loc_ep=10, alg='fedprox', weight = False):
     t.train()
 
 
-def simple_read_data(loc_ep,alg):
+def simple_read_data(loc_ep, alg):
     hf = h5py.File('data_{}_{}.h5'.format(alg,loc_ep), 'r')
     rs_glob_acc = np.array(hf.get('rs_glob_acc')[:])
     rs_train_acc = np.array(hf.get('rs_train_acc')[:])
@@ -150,28 +149,36 @@ def simple_read_data(loc_ep,alg):
 def plot_summary(loc_ep1=5, loc_ep2=20):
 
     Numb_Glob_Iters=50
-    Numb_Algs = 3
+    Numb_Algs = 4
 
-    train_acc, train_acc1     = np.zeros((3,Numb_Glob_Iters)), np.zeros((3,Numb_Glob_Iters))
-    train_loss, train_loss1   = np.zeros((3, Numb_Glob_Iters)), np.zeros((3, Numb_Glob_Iters))
-    glob_acc, glob_acc1   = np.zeros((3, Numb_Glob_Iters)), np.zeros((3, Numb_Glob_Iters))
+    train_acc, train_acc1     = np.zeros((4,Numb_Glob_Iters)), np.zeros((4,Numb_Glob_Iters))
+    train_loss, train_loss1   = np.zeros((4, Numb_Glob_Iters)), np.zeros((4, Numb_Glob_Iters))
+    glob_acc, glob_acc1   = np.zeros((4, Numb_Glob_Iters)), np.zeros((4, Numb_Glob_Iters))
 
 
-    train_acc[0, :], train_loss[0, :], glob_acc[0, :] = simple_read_data(loc_ep1, 'fedavg')
-    train_acc[1, :], train_loss[1, :], glob_acc[1, :] = simple_read_data(loc_ep1, 'fedprox')
-    train_acc[2, :], train_loss[2, :], glob_acc[2, :] = simple_read_data(loc_ep1, 'fedprox1')
+    train_acc[0, :], train_loss[0, :], glob_acc[0, :] = simple_read_data(loc_ep1, 'fedsvrg')
+    train_acc[1, :], train_loss[1, :], glob_acc[1, :] = simple_read_data(loc_ep1, 'fedsarah')
+    train_acc[2, :], train_loss[2, :], glob_acc[2, :] = simple_read_data(loc_ep1, 'fedsgd')
+    train_acc[3, :], train_loss[3, :], glob_acc[3, :] = simple_read_data(loc_ep1, 'fedavg')
 
-    train_acc1[0, :], train_loss1[0, :], glob_acc1[0, :] = simple_read_data(loc_ep2, 'fedavg')
-    train_acc1[1, :], train_loss1[1, :], glob_acc1[1, :] = simple_read_data(loc_ep2, 'fedprox')
-    train_acc1[2, :], train_loss1[2, :], glob_acc1[2, :] = simple_read_data(loc_ep2, 'fedprox1')
+    #train_acc1[0, :], train_loss1[0, :], glob_acc1[0, :] = simple_read_data(loc_ep2, 'fedsvrg')
+    #train_acc1[1, :], train_loss1[1, :], glob_acc1[1, :] = simple_read_data(loc_ep2, 'fedsarah')
+    #train_acc1[2, :], train_loss1[2, :], glob_acc1[2, :] = simple_read_data(loc_ep2, 'fedsgd')
+    #train_acc1[3, :], train_loss1[3, :], glob_acc1[3, :] = simple_read_data(loc_ep1, 'fedavg')
 
-    algs_lbl = ["FedAvg - 5", "FedProx - 5","FedProx1 - 5"]
-    algs_lbl1 = ["FedAvg - 20", "FedProx - 20", "FedProx1 - 20"]
+    algs_lbl = ["fedsvrg -" + str(loc_ep1),
+                "fedsarah -" + str(loc_ep1),
+                "fedsgd - " + str(loc_ep1),
+                "fedavg - " + str(loc_ep1)]
+    #algs_lbl1 = ["fedsvrg -" + str(loc_ep2),
+    #             "fedsarah -" + str(loc_ep2),
+    #             "fedsgd - " + str(loc_ep2),
+    #             "fedavg - " + str(loc_ep2)]
 
     plt.figure(1)
     for i in range(Numb_Algs):
         plt.plot(train_acc[i, 1:], linestyle=":", label=algs_lbl[i])
-        plt.plot(train_acc1[i, 1:], label=algs_lbl1[i])
+        #plt.plot(train_acc1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
     plt.ylabel('Training Accuracy')
     plt.xlabel('Number of Global Iterations')
@@ -180,7 +187,7 @@ def plot_summary(loc_ep1=5, loc_ep2=20):
     plt.figure(2)
     for i in range(Numb_Algs):
         plt.plot(train_loss[i, 1:], linestyle=":", label=algs_lbl[i])
-        plt.plot(train_loss1[i, 1:], label=algs_lbl1[i])
+        #plt.plot(train_loss1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
     plt.ylabel('Training Loss')
     plt.xlabel('Number of Global Iterations')
@@ -189,7 +196,7 @@ def plot_summary(loc_ep1=5, loc_ep2=20):
     plt.figure(3)
     for i in range(Numb_Algs):
         plt.plot(glob_acc[i, 1:], linestyle=":", label=algs_lbl[i])
-        plt.plot(glob_acc1[i, 1:], label=algs_lbl1[i])
+        #plt.plot(glob_acc1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
     plt.ylabel('Test Accuracy')
     plt.xlabel('Number of Global Iterations')
@@ -202,9 +209,8 @@ if __name__ == '__main__':
     if(SUMARRY):
         plot_summary(loc_ep1=5, loc_ep2=20)
     else:
-       main(num_users=20, loc_ep=30, alg='fedsvrg', weight=True)  # 'fedavg', 'fedprox'
-       main(num_users=20, loc_ep=30, alg='fedsarah', weight=True)
-       main(num_users=20, loc_ep=30, alg='fedsgd', weight=True)
-       main(num_users=20, loc_ep=30, alg='fedavg', weight=True)
-       main(num_users=20, loc_ep=30, alg='fedsvrg', weight=True)
+       #main(num_users=20, loc_ep=50, alg='fedsvrg') 
+       #main(num_users=20, loc_ep=50, alg='fedsgd')
+       main(num_users=20, loc_ep=50, alg='fedavg')
+       #main(num_users=20, loc_ep=30, alg='fedsarah')
        print("-- FINISH -- :",)
