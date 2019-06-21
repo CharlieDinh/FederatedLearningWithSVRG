@@ -35,7 +35,7 @@ class Client(object):
         bytes_r=self.model.size
         return ((self.num_samples, grads), (bytes_w, comp, bytes_r))
 
-    def solve_inner(self, num_epochs = 1, batch_size = 10):
+    def solve_inner(self, optimizer, num_epochs=1, batch_size=10):
         '''Solves local optimization problem
 
         Return:
@@ -47,7 +47,7 @@ class Client(object):
         '''
 
         bytes_w=self.model.size
-        soln, comp=self.model.solve_inner(
+        soln, comp = self.model.solve_inner(optimizer,
             self.train_data, num_epochs, batch_size)
         bytes_r=self.model.size
         return (self.num_samples, soln), (bytes_w, comp, bytes_r)

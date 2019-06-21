@@ -92,7 +92,7 @@ class Model(object):
 
         return model_grads
 
-    def solve_inner(self, data, num_epochs=1, batch_size=32):
+    def solve_inner(self, optimizer, data, num_epochs=1, batch_size=32):
         '''Solves local optimization problem'''
 
         if (batch_size == 0):  # Full data or batch_size
@@ -103,27 +103,38 @@ class Model(object):
         wzero = self.get_params()
 
         # for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
-        earlystop = np.random.randint(0, num_epochs+1)
+        if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
+            num_epochs = np.random.randint(0, num_epochs+1)
+
         for _ in range(num_epochs): # t = 1,2,3,4,5,...m
             for X, y in batch_data(data, batch_size):
                 with self.graph.as_default():
                     # get the current weight
-                    current_weight = self.get_params()
+                    if(optimizer == "fedsvrg"):
+                        current_weight = self.get_params()
 
-                    # calculate fw0 first:
-                    self.set_params(wzero)
-                    fwzero = self.sess.run(self.grads,
-                                           feed_dict={self.features: X, self.labels: y})
+                        # calculate fw0 first:
+                        self.set_params(wzero)
+                        fwzero = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})
+                        self.optimizer.set_fwzero(fwzero, self)
 
-                    self.optimizer.set_fwzero(fwzero, self)
-
-                    # return the current weight to the model
-                    self.set_params(current_weight)
-
-                    self.sess.run(self.train_op,
-                                  feed_dict={self.features: X, self.labels: y})
-            if(_ == earlystop):
-                break
+                        # return the current weight to the model
+                        self.set_params(current_weight)
+                        self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
+                    elif(optimizer == "fedsarah"):
+                        if( _ == 0):
+                            current_weight = self.get_params()
+                            self.set_params(wzero)
+                            firstGrad = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})
+                            self.optimizer.set_preG(firstGrad, self)
+                            self.set_params(current_weight)
+                            curGrad = self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
+                        else:
+                            self.optimizer.set_preG(curGrad, self)
+                            curGrad = self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
+                    else:
+                        self.sess.run(self.train_op, feed_dict={
+                                      self.features: X, self.labels: y})
         soln = self.get_params()
 
         comp = num_epochs * \
