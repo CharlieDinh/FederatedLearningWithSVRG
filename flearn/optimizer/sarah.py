@@ -31,10 +31,12 @@ class SARAH(optimizer.Optimizer):
         vzero = self.get_slot(var, "vzero")
         preG = self.get_slot(var, "preG")
         v_n_s = grad - preG + vzero
+
+        v_update = state_ops.assign(vzero, v_n_s)
         prox = tf_utils.prox_L2(var - lr_t * v_n_s, 0.001)
         var_update = state_ops.assign(var, prox)
 
-        return control_flow_ops.group(*[var_update, ])
+        return control_flow_ops.group(*[var_update, v_update, ])
 
     def set_vzero(self, vzero, client):
         with client.graph.as_default():
