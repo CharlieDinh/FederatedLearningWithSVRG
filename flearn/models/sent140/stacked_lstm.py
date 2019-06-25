@@ -174,12 +174,12 @@ class Model(object):
                     elif(optimizer == "fedsarah"):
                         if(_ == 0):
                             firstGrad = self.sess.run(self.grads, feed_dict={
-                                                      self.features: X, self.labels: target_data})
+                                                      self.features: input_data, self.labels: target_data})
                             # update gradient of w_0
                             self.optimizer.set_preG(firstGrad, self)
                             self.sess.run(self.train_op, feed_dict={
 
-                                          self.features: X, self.labels: y})
+                                          self.features: input_data, self.labels: target_data})
                             currentGrad = self.sess.run(self.grads, feed_dict={
                                                         self.features: input_data, self.labels: target_data})
                         else:
