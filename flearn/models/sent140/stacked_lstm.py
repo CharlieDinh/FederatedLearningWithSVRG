@@ -35,7 +35,7 @@ class Model(object):
         self.num_classes = num_classes
         self.n_hidden = n_hidden
         self.emb_arr = word_emb
-
+        self.optimizer = optimizer
         # create computation graph
         self.graph = tf.Graph()
         with self.graph.as_default():
