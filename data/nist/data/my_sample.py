@@ -9,7 +9,7 @@ from tqdm import trange
 
 from PIL import Image
 
-NUM_USER = 200
+NUM_USER = 50
 CLASS_PER_USER = 19
 
 

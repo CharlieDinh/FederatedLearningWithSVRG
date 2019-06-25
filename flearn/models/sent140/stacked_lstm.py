@@ -154,6 +154,8 @@ class Model(object):
 
         for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
             for X, y in batch_data(data, batch_size):
+                input_data = process_x(X)
+                target_data = process_y(y)
                 with self.graph.as_default():
                     # get the current weight
                     if(optimizer == "fedsvrg"):
@@ -162,35 +164,35 @@ class Model(object):
                         # calculate fw0 first:
                         self.set_params(wzero)
                         fwzero = self.sess.run(self.grads, feed_dict={
-                                               self.features: X, self.labels: y})
+                                               self.features: input_data, self.labels: target_data})
                         self.optimizer.set_fwzero(fwzero, self)
 
                         # return the current weight to the model
                         self.set_params(current_weight)
                         self.sess.run(self.train_op, feed_dict={
-                                      self.features: X, self.labels: y})
+                                      self.features: input_data, self.labels: target_data})
                     elif(optimizer == "fedsarah"):
                         if(_ == 0):
                             firstGrad = self.sess.run(self.grads, feed_dict={
-                                                      self.features: X, self.labels: y})
+                                                      self.features: X, self.labels: target_data})
                             # update gradient of w_0
                             self.optimizer.set_preG(firstGrad, self)
                             self.sess.run(self.train_op, feed_dict={
 
                                           self.features: X, self.labels: y})
                             currentGrad = self.sess.run(self.grads, feed_dict={
-                                                        self.features: X, self.labels: y})
+                                                        self.features: input_data, self.labels: target_data})
                         else:
                             # update previous gradient
                             self.optimizer.set_preG(currentGrad, self)
                             self.sess.run(self.train_op, feed_dict={
-                                self.features: X, self.labels: y})
+                                self.features: input_data, self.labels: target_data})
 
                             currentGrad = self.sess.run(self.grads, feed_dict={
-                                self.features: X, self.labels: y})
+                                self.features: input_data, self.labels: target_data})
                     else:
                         self.sess.run(self.train_op, feed_dict={
-                                      self.features: X, self.labels: y})
+                                      self.features: input_data, self.labels: target_data})
         soln = self.get_params()
 
         comp = num_epochs * \
