@@ -21,6 +21,7 @@ MODEL_PARAMS = {
     'sent140.stacked_lstm': (25, 2, 100), # seq_len, num_classes, num_hidden 
     'sent140.stacked_lstm_no_embeddings': (25, 2, 100), # seq_len, num_classes, num_hidden
     'nist.mclr': (62,),  # num_classes, should be changed to 62 when using EMNIST
+    'nist.cnn': (62,),
     'mnist.mclr': (10,), # num_classes
     'mnist.cnn': (10,),  # num_classes
     'shakespeare.stacked_lstm': (80, 80, 256), # seq_len, emb_dim, num_hidden
