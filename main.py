@@ -29,7 +29,7 @@ MODEL_PARAMS = {
 }
 
 
-def read_options(num_users=5, loc_ep=10, alg='fedprox', weight = True):
+def read_options(num_users=5, loc_ep=10,Numb_Glob_Iters = 100, alg='fedprox', weight = True):
     ''' Parse command line arguments or load defaults '''
     parser = argparse.ArgumentParser()
 
@@ -50,7 +50,7 @@ def read_options(num_users=5, loc_ep=10, alg='fedprox', weight = True):
     parser.add_argument('--num_rounds',
                     help='number of rounds to simulate;',
                     type=int,
-                    default=50)
+                    default=Numb_Glob_Iters)
     parser.add_argument('--eval_every',
                     help='evaluate every ____ rounds;',
                     type=int,
@@ -123,12 +123,12 @@ def read_options(num_users=5, loc_ep=10, alg='fedprox', weight = True):
     return parsed, learner, optimizer
 
 
-def main(num_users=5, loc_ep=10, alg='fedprox', weight = True):
+def main(num_users=5, loc_ep=10,Numb_Glob_Iters = 100, alg='fedprox', weight = True):
     # suppress tf warnings
     tf.logging.set_verbosity(tf.logging.WARN)
     
     # parse command line arguments
-    options, learner, optimizer = read_options(num_users, loc_ep, alg, weight)
+    options, learner, optimizer = read_options(num_users, loc_ep, Numb_Glob_Iters, alg, weight)
 
     # read data
     train_path = os.path.join('data', options['dataset'], 'data', 'train')
@@ -147,34 +147,17 @@ def simple_read_data(loc_ep, alg):
     rs_train_loss = np.array(hf.get('rs_train_loss')[:])
     return rs_train_acc, rs_train_loss, rs_glob_acc
 
-def plot_summary(loc_ep1=5, loc_ep2=20):
+def plot_summary(loc_ep1=5, Numb_Glob_Iters = 10, algorithms_list = []):
 
-    Numb_Glob_Iters=50
-    Numb_Algs = 4
+    Numb_Algs = len(algorithms_list)
 
-    train_acc, train_acc1     = np.zeros((4,Numb_Glob_Iters)), np.zeros((4,Numb_Glob_Iters))
-    train_loss, train_loss1   = np.zeros((4, Numb_Glob_Iters)), np.zeros((4, Numb_Glob_Iters))
-    glob_acc, glob_acc1   = np.zeros((4, Numb_Glob_Iters)), np.zeros((4, Numb_Glob_Iters))
-
-
-    train_acc[0, :], train_loss[0, :], glob_acc[0, :] = simple_read_data(loc_ep1, 'fedsvrg')
-    train_acc[1, :], train_loss[1, :], glob_acc[1, :] = simple_read_data(loc_ep1, 'fedsarah')
-    train_acc[2, :], train_loss[2, :], glob_acc[2, :] = simple_read_data(loc_ep1, 'fedsgd')
-    train_acc[3, :], train_loss[3, :], glob_acc[3, :] = simple_read_data(loc_ep1, 'fedavg')
-
-    #train_acc1[0, :], train_loss1[0, :], glob_acc1[0, :] = simple_read_data(loc_ep2, 'fedsvrg')
-    #train_acc1[1, :], train_loss1[1, :], glob_acc1[1, :] = simple_read_data(loc_ep2, 'fedsarah')
-    #train_acc1[2, :], train_loss1[2, :], glob_acc1[2, :] = simple_read_data(loc_ep2, 'fedsgd')
-    #train_acc1[3, :], train_loss1[3, :], glob_acc1[3, :] = simple_read_data(loc_ep1, 'fedavg')
-
-    algs_lbl = ["fedsvrg -" + str(loc_ep1),
-                "fedsarah -" + str(loc_ep1),
-                "fedsgd - " + str(loc_ep1),
-                "fedavg - " + str(loc_ep1)]
-    #algs_lbl1 = ["fedsvrg -" + str(loc_ep2),
-    #             "fedsarah -" + str(loc_ep2),
-    #             "fedsgd - " + str(loc_ep2),
-    #             "fedavg - " + str(loc_ep2)]
+    train_acc       = np.zeros((Numb_Algs,Numb_Glob_Iters))
+    train_loss      = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    glob_acc        = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    algs_lbl = algorithms_list
+    for i in range(Numb_Algs):
+        train_acc[i, :], train_loss[i, :], glob_acc[i, :] = simple_read_data(loc_ep1, algorithms_list[i])
+        algs_lbl[i] = algs_lbl[i] + str(loc_ep1)
 
     plt.figure(1)
     for i in range(Numb_Algs):
@@ -207,11 +190,14 @@ def plot_summary(loc_ep1=5, loc_ep2=20):
 if __name__ == '__main__':
     # main()
     SUMARRY = False  #True: Plot summary results, False: run algorithms
+    algorithms_list = ["fedsvrg", "fedsgd", "fedavg", "fedsarah"]
     if(SUMARRY):
-        plot_summary(loc_ep1=5, loc_ep2=20)
+        #plot_summary(loc_ep1=50, loc_ep2=20)
+        plot_summary(loc_ep1=50, Numb_Glob_Iters = 50, algorithms_list= algorithms_list)
     else:
-       #main(num_users=20, loc_ep=50, alg='fedsvrg') 
-       #main(num_users=20, loc_ep=50, alg='fedsgd')
-       main(num_users=20, loc_ep=50, alg='fedavg')
-       #main(num_users=20, loc_ep=30, alg='fedsarah')
-       print("-- FINISH -- :",)
+        for i in range(len(algorithms_list)):
+            main(num_users=50, loc_ep=50, Numb_Glob_Iters = 50, alg = algorithms_list[i])
+        
+        plot_summary(loc_ep1=50, Numb_Glob_Iters = 50, algorithms_list = algorithms_list)
+
+        print("-- FINISH -- :",)
