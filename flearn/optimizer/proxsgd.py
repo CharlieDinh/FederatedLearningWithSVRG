@@ -7,10 +7,10 @@ import tensorflow as tf
 import flearn.utils.tf_utils as tf_utils
 
 
-class SGD(optimizer.Optimizer):
+class PROXSGD(optimizer.Optimizer):
     """Implementation of Proximal Gradient Decent, i.e., FedProx optimizer"""
 
-    def __init__(self, learning_rate=0.001, use_locking=False, name="SGD"):
+    def __init__(self, learning_rate=0.001, use_locking=False, name="PROXSGD"):
         super(SGD, self).__init__(use_locking, name)
         self._lr = learning_rate
         # Tensor versions of the constructor arguments, created in _prepare().

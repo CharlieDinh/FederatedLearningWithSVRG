@@ -8,7 +8,7 @@ import flearn.utils.tf_utils as tf_utils
 
 
 class SARAH(optimizer.Optimizer):
-    """Implementation of Proximal Sarah, i.e., FedProx optimizer"""
+    """Implementation of Sarah optimizer"""
 
     def __init__(self, learning_rate=0.001, use_locking=False, name="SARAH"):
         super(SARAH, self).__init__(use_locking, name)
@@ -31,10 +31,8 @@ class SARAH(optimizer.Optimizer):
         vzero = self.get_slot(var, "vzero")
         preG = self.get_slot(var, "preG")
         v_n_s = grad - preG + vzero
-
         v_update = state_ops.assign(vzero, v_n_s)
-        prox = tf_utils.prox_L2(var - lr_t * v_n_s, 0.001)
-        var_update = state_ops.assign(var, prox)
+        var_update = state_ops.assign_sub(var, lr_t * v_n_s)
 
         return control_flow_ops.group(*[var_update, v_update, ])
 

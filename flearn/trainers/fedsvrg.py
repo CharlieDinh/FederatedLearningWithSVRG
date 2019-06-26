@@ -4,6 +4,7 @@ import tensorflow as tf
 
 from .fedbase import BaseFedarated
 from flearn.optimizer.svrg import SVRG
+from flearn.optimizer.proxsvrg import PROXSVRG
 from flearn.utils.tf_utils import process_grad, process_sparse_grad
 
 #WEIGHTED = False
@@ -12,7 +13,10 @@ from flearn.utils.tf_utils import process_grad, process_sparse_grad
 class Server(BaseFedarated):
     def __init__(self, params, learner, dataset):
         print('Using Federated prox to Train')
-        self.inner_opt = SVRG(params['learning_rate'])
+        if(params["lamb"] > 0):
+            self.inner_opt = PROXSVRG(params['learning_rate'], params["lamb"])
+        else:
+            self.inner_opt = SVRG(params['learning_rate'])
         #self.seed = 1
         super(Server, self).__init__(params, learner, dataset)
 
@@ -105,7 +109,10 @@ class Server(BaseFedarated):
 
         # save server model
         self.metrics.write()
-        self.save(weighted=self.parameters['weight'])
+        prox = 0
+        if(self.parameters['lamb'] > 0):
+            prox = 1
+        self.save(prox=prox)
 
         print("Test ACC:", self.rs_glob_acc)
         print("Training ACC:", self.rs_train_acc)
