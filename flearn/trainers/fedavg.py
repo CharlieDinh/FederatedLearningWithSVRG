@@ -2,14 +2,17 @@ import numpy as np
 from tqdm import trange, tqdm
 import tensorflow as tf
 from flearn.utils.tf_utils import process_grad
-
+from flearn.optimizer.proxsgd import PROXSGD
 from .fedbase import BaseFedarated
 
 
 class Server(BaseFedarated):
     def __init__(self, params, learner, dataset):
         print('Using Federated Average to Train')
-        self.inner_opt = tf.train.GradientDescentOptimizer(params['learning_rate'])
+        if(params["lamb"] > 0):
+            self.inner_opt = PROXSGD(params['learning_rate'], params["lamb"])
+        else:
+            self.inner_opt = tf.train.GradientDescentOptimizer(params['learning_rate'])
         super(Server, self).__init__(params, learner, dataset)
 
     def train(self):

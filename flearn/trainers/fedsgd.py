@@ -3,7 +3,7 @@ from tqdm import trange, tqdm
 import tensorflow as tf
 
 from .fedbase import BaseFedarated
-from flearn.optimizer.sgd import SGD
+from flearn.optimizer.proxsgd import PROXSGD
 from flearn.utils.tf_utils import process_grad, process_sparse_grad
 
 #WEIGHTED = False
@@ -11,8 +11,8 @@ from flearn.utils.tf_utils import process_grad, process_sparse_grad
 
 class Server(BaseFedarated):
     def __init__(self, params, learner, dataset):
-        print('Using Federated prox to Train')
-        self.inner_opt = SGD(params['learning_rate'])
+        print('Using Federated SGD to Train')
+        self.inner_opt = PROXSGD(params['learning_rate'], params["lamb"])
         #self.seed = 1
         super(Server, self).__init__(params, learner, dataset)
 
@@ -101,7 +101,10 @@ class Server(BaseFedarated):
 
         # save server model
         self.metrics.write()
-        self.save(weighted=self.parameters['weight'])
+        prox = 0
+        if(self.parameters['lamb'] > 0):
+            prox = 1
+        self.save(prox=prox)
 
         print("Test ACC:", self.rs_glob_acc)
         print("Training ACC:", self.rs_train_acc)

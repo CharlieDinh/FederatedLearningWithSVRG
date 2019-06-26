@@ -195,8 +195,10 @@ if __name__ == '__main__':
 
     #algorithms_list = ["fedsvrg", "fedsgd", "fedavg", "fedsarah"]
     #lamb_value = [0.01, 0.001, 0, 0]
-    algorithms_list = ["fedsvrg", "fedsvrg"]
-    lamb_value = [0,0.001]
+    algorithms_list = ["fedsvrg", "fedsvrg",
+                        "fedsarah", "fedsarah",
+                        "fedavg", "fedavg" ]
+    lamb_value = [0, 0.001, 0, 0.001, 0, 0.001]
     SUMARRY = False  #True: Plot summary results, False: run algorithms
     
     if(SUMARRY):
@@ -204,8 +206,8 @@ if __name__ == '__main__':
         plot_summary(loc_ep1=50, Numb_Glob_Iters=50,
                      lamb=lamb_value, algorithms_list=algorithms_list)
     else:
-        #for i in range(len(algorithms_list)):
-        #    main(num_users=50, loc_ep=10, Numb_Glob_Iters=10, lamb = lamb_value[i], alg=algorithms_list[i])
+        for i in range(len(algorithms_list)):
+            main(num_users=50, loc_ep=10, Numb_Glob_Iters=10, lamb = lamb_value[i], alg=algorithms_list[i])
         
         plot_summary(loc_ep1=10, Numb_Glob_Iters=10, lamb=lamb_value, algorithms_list=algorithms_list)
 

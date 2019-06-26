@@ -94,7 +94,7 @@ class BaseFedarated(object):
         groups = [c.group for c in self.clients]
         return ids, groups, num_samples, tot_correct
 
-    def save(self, prox = True):
+    def save(self, prox = False):
         alg = self.parameters['optimizer']
 
         if (prox == True):
