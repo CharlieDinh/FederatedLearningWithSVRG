@@ -91,7 +91,8 @@ class Server(BaseFedarated):
         tqdm.write('At round {} training accuracy: {}'.format(self.num_rounds, np.sum(stats_train[3])*1.0/np.sum(stats_train[2])))
         # save server model
         self.metrics.write()
-        self.save()
+        #self.save()
+        self.save(learning_rate=self.parameters["learning_rate"])
 
         print("Test ACC:", self.rs_glob_acc)
         print("Training ACC:", self.rs_train_acc)
