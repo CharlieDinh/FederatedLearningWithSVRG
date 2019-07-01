@@ -151,7 +151,7 @@ def simple_read_data(loc_ep, alg):
     return rs_train_acc, rs_train_loss, rs_glob_acc
 
 
-def plot_summary(loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate= [], algorithms_list=[]):
+def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[]):
 
     Numb_Algs = len(algorithms_list)
     train_acc       = np.zeros((Numb_Algs,Numb_Glob_Iters))
@@ -172,6 +172,7 @@ def plot_summary(loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate= [], algo
     plt.legend(loc='best')
     plt.ylabel('Training Accuracy')
     plt.xlabel('Number of Global Iterations')
+    plt.title('number users: ' + str(num_users))
     plt.savefig('train_acc.png')
 
     plt.figure(2)
@@ -181,6 +182,7 @@ def plot_summary(loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate= [], algo
     plt.legend(loc='best')
     plt.ylabel('Training Loss')
     plt.xlabel('Number of Global Iterations')
+    plt.title('number users: ' + str(num_users))
     plt.savefig('train_loss.png')
 
     plt.figure(3)
@@ -190,6 +192,7 @@ def plot_summary(loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate= [], algo
     plt.legend(loc='best')
     plt.ylabel('Test Accuracy')
     plt.xlabel('Number of Global Iterations')
+    plt.title('number users: ' + str(num_users))
     plt.savefig('glob_acc.png')
 
 
@@ -201,15 +204,15 @@ if __name__ == '__main__':
     #learning_rate = [0.005, 0.01, 0.001]
     #lamb_value = [0]
     learning_rate = [0.01, 0.01, 0.01]
-    if(1):
+    if(0):
         #plot_summary(loc_ep1=50, loc_ep2=20)
-        plot_summary(loc_ep1=50, Numb_Glob_Iters=200,
+        plot_summary(num_users=100,loc_ep1=50, Numb_Glob_Iters=100,
                       lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
-        for i in range(len(algorithms_list)):
-            main(num_users=100, loc_ep=50, Numb_Glob_Iters=200, lamb=lamb_value[i], learning_rate = learning_rate[i], alg=algorithms_list[i])
+        #for i in range(len(algorithms_list)):
+        #    main(num_users=100, loc_ep=50, Numb_Glob_Iters=100, lamb=lamb_value[i], learning_rate = learning_rate[i], alg=algorithms_list[i])
         
-        plot_summary(loc_ep1=50, Numb_Glob_Iters=200,
+        plot_summary(num_users=100,loc_ep1=50, Numb_Glob_Iters=100,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)
