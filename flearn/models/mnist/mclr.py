@@ -103,8 +103,8 @@ class Model(object):
         wzero = self.get_params()
 
         # for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
-        if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
-            num_epochs = np.random.randint(0, num_epochs+1)
+        #if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
+        #    num_epochs = np.random.randint(0, num_epochs+1)
 
         for _ in range(num_epochs): # t = 1,2,3,4,5,...m
             for X, y in batch_data(data, batch_size):

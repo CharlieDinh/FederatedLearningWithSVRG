@@ -192,7 +192,7 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
     plt.legend(loc='best')
     plt.ylabel('Test Accuracy')
     plt.xlabel('Number of Global Iterations')
-    plt.title('number users: ' + str(num_users))
+    plt.title('number users: ' + str(num_users)+ ', Lr: ' + str(learning_rate[0]))
     plt.savefig('glob_acc.png')
 
 
