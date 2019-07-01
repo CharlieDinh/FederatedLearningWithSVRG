@@ -157,10 +157,11 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
     train_acc       = np.zeros((Numb_Algs,Numb_Glob_Iters))
     train_loss      = np.zeros((Numb_Algs, Numb_Glob_Iters))
     glob_acc        = np.zeros((Numb_Algs, Numb_Glob_Iters))
-    algs_lbl = algorithms_list
+    algs_lbl = algorithms_list.copy()
     for i in range(Numb_Algs):
         if(lamb[i] > 0):
             algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
+            algs_lbl[i] = algs_lbl[i] + "_prox"
         algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i])
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = simple_read_data(loc_ep1, algorithms_list[i])
         algs_lbl[i] = algs_lbl[i] + "_" +str(loc_ep1)
@@ -172,7 +173,7 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
     plt.legend(loc='best')
     plt.ylabel('Training Accuracy')
     plt.xlabel('Number of Global Iterations')
-    plt.title('number users: ' + str(num_users))
+    plt.title('Number of users: ' + str(num_users)+ ', Lr: ' + str(learning_rate[0]))
     plt.savefig('train_acc.png')
 
     plt.figure(2)
@@ -182,7 +183,7 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
     plt.legend(loc='best')
     plt.ylabel('Training Loss')
     plt.xlabel('Number of Global Iterations')
-    plt.title('number users: ' + str(num_users))
+    plt.title('Number of users: ' + str(num_users)+ ', Lr: ' + str(learning_rate[0]))
     plt.savefig('train_loss.png')
 
     plt.figure(3)
@@ -192,7 +193,7 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
     plt.legend(loc='best')
     plt.ylabel('Test Accuracy')
     plt.xlabel('Number of Global Iterations')
-    plt.title('number users: ' + str(num_users)+ ', Lr: ' + str(learning_rate[0]))
+    plt.title('Number of users: ' + str(num_users)+ ', Lr: ' + str(learning_rate[0]))
     plt.savefig('glob_acc.png')
 
 
