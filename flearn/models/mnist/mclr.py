@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import trange
 
-from flearn.utils.model_utils import batch_data
+from flearn.utils.model_utils import batch_data, get_single_sample
 from flearn.utils.tf_utils import graph_size
 from flearn.utils.tf_utils import process_grad
 
@@ -103,45 +103,44 @@ class Model(object):
         wzero = self.get_params()
 
         # for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
-        #if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
+        # if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
         #    num_epochs = np.random.randint(0, num_epochs+1)
 
-        for _ in range(num_epochs): # t = 1,2,3,4,5,...m
-            for X, y in batch_data(data, batch_size):
-                with self.graph.as_default():
-                    # get the current weight
-                    if(optimizer == "fedsvrg"):
-                        current_weight = self.get_params()
+        for e in range(num_epochs):  # t = 1,2,3,4,5,...m
+            X, y = get_single_sample(data)
 
-                        # calculate fw0 first:
-                        self.set_params(wzero)
-                        fwzero = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})
-                        self.optimizer.set_fwzero(fwzero, self)
+            with self.graph.as_default():
+                # get the current weight
+                if(optimizer == "fedsvrg"):
+                    current_weight = self.get_params()
 
-                        # return the current weight to the model
-                        self.set_params(current_weight)
-                        self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
-                    elif(optimizer == "fedsarah"):
-                        if(_ == 0):  
-                            firstGrad = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})
-                            # update gradient of w_0
-                            self.optimizer.set_preG(firstGrad, self)
-                            self.sess.run(self.train_op, feed_dict={
-                                
-                                          self.features: X, self.labels: y})
-                            currentGrad = self.sess.run(self.grads, feed_dict={
-                                                        self.features: X, self.labels: y})
-                        else: 
-                            # update previous gradient
-                            self.optimizer.set_preG(currentGrad, self)
-                            self.sess.run(self.train_op, feed_dict={
-                                      self.features: X, self.labels: y})
-                                      
-                            currentGrad = self.sess.run(self.grads, feed_dict={
+                    # calculate fw0 first:
+                    self.set_params(wzero)
+                    fwzero = self.sess.run(self.grads, feed_dict={
+                                           self.features: X, self.labels: y})
+                    self.optimizer.set_fwzero(fwzero, self)
+
+                    # return the current weight to the model
+                    self.set_params(current_weight)
+                    self.sess.run(self.train_op, feed_dict={
+                                  self.features: X, self.labels: y})
+                elif(optimizer == "fedsarah"):
+                    if(e == 0):
+                        firstGrad = self.sess.run(self.grads, feed_dict={
+                                                  self.features: X, self.labels: y})
+                        # update gradient of w_0
+                        self.optimizer.set_preG(firstGrad, self)
+                        _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
                             self.features: X, self.labels: y})
                     else:
-                        self.sess.run(self.train_op, feed_dict={
-                                      self.features: X, self.labels: y})
+                        # update previous gradient
+                        self.optimizer.set_preG(currentGrad, self)
+                        _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
+                            self.features: X, self.labels: y})
+
+                else:
+                    self.sess.run(self.train_op, feed_dict={
+                                  self.features: X, self.labels: y})
         soln = self.get_params()
 
         comp = num_epochs * \

@@ -25,6 +25,17 @@ def batch_data(data, batch_size):
         yield (batched_x, batched_y)
 
 
+def get_single_sample(data):
+    data_x = data['x']
+    data_y = data['y']
+
+    # randomly shuffle data
+    np.random.seed(100)
+
+    idx = np.random.choice(list(range(len(data_x))))
+    return ([data_x[idx]], [data_y[idx]])
+
+
 def read_data(train_data_dir, test_data_dir):
     '''parses data in given train and test data directories
 
