@@ -62,7 +62,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters = 100, lamb = 0, learni
     parser.add_argument('--batch_size',
                     help='batch size when clients train on data;',
                     type=int,
-                    default=0) #0 is full dataset
+                    default=1) #0 is full dataset
     parser.add_argument('--num_epochs', 
                     help='number of epochs when clients train on data;',
                     type=int,
@@ -198,7 +198,7 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
 
 
 if __name__ == '__main__':
-    algorithms_list = ["fedsvrg", "fedsarah", "fedavg"]
+    algorithms_list = ["fedsarah", "fedsvrg", "fedavg"]
     lamb_value = [0.001,  0.001, 0]
     #algorithms_list = ["fedavg"]
     #lamb_value =    [0.001, 0.0001, 0.001]
@@ -210,8 +210,8 @@ if __name__ == '__main__':
         plot_summary(num_users=100,loc_ep1=50, Numb_Glob_Iters=100,
                       lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
-        #for i in range(len(algorithms_list)):
-        #    main(num_users=100, loc_ep=50, Numb_Glob_Iters=100, lamb=lamb_value[i], learning_rate = learning_rate[i], alg=algorithms_list[i])
+        for i in range(len(algorithms_list)):
+            main(num_users=100, loc_ep=50, Numb_Glob_Iters=100, lamb=lamb_value[i], learning_rate = learning_rate[i], alg=algorithms_list[i])
         
         plot_summary(num_users=100,loc_ep1=50, Numb_Glob_Iters=100,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
