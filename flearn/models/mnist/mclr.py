@@ -43,7 +43,7 @@ class Model(object):
             tf.float32, shape=[None, 784], name='features')
         labels = tf.placeholder(tf.int64, shape=[None, ], name='labels')
         logits = tf.layers.dense(inputs=features, units=self.num_classes, kernel_regularizer=tf.contrib.layers.l2_regularizer(
-            0.))  # 0.001  #Linear layer without regularizer
+            0.001))  # 0.001  #Linear layer without regularizer
         predictions = {
             "classes": tf.argmax(input=logits, axis=1),
             "probabilities": tf.nn.softmax(logits, name="softmax_tensor")
