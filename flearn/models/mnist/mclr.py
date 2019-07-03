@@ -105,8 +105,14 @@ class Model(object):
         # suffer data in hear before get on single data
 
         data_x, data_y = suffer_data(data)
+        if(optimizer == "fedsarah"):
+            X, y = get_random_batch_sample(data_x, data_y, 1)
+            firstGrad = self.sess.run(self.grads, feed_dict={
+                self.features: X, self.labels: y})
+            self.optimizer.set_preG(firstGrad, self)
+
         for e in range(num_epochs):
-            X, y = get_random_batch_sample(data_x, data_y, batch_size)
+            X, y = get_random_batch_sample(data_x, data_y, 1)
             with self.graph.as_default():
                 # get the current weight
                 if(optimizer == "fedsvrg"):
@@ -122,24 +128,15 @@ class Model(object):
                     self.sess.run(self.train_op, feed_dict={
                                   self.features: X, self.labels: y})
                 elif(optimizer == "fedsarah"):
-                    if(e == 0):
-                        firstGrad = self.sess.run(self.grads, feed_dict={
-                                                  self.features: X, self.labels: y})
-                        # update gradient of w_0
-                        self.optimizer.set_preG(firstGrad, self)
-                        _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
-                            self.features: X, self.labels: y})
-                    else:
-                        # update previous gradient
-                        self.optimizer.set_preG(currentGrad, self)
-                        _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
-                            self.features: X, self.labels: y})
-                else: # for average and Sgd
+                    self.sess.run([self.train_op], feed_dict={
+                        self.features: X, self.labels: y})
+                else:  # for average and Sgd
                     self.sess.run(self.train_op, feed_dict={
                                   self.features: X, self.labels: y})
         soln = self.get_params()
 
-        comp = num_epochs * (len(data['y'])//batch_size) * batch_size * self.flops
+        comp = num_epochs * \
+            (len(data['y'])//batch_size) * batch_size * self.flops
         return soln, comp
 
     def test(self, data):
