@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import trange
 
-from flearn.utils.model_utils import batch_data, get_single_sample
+from flearn.utils.model_utils import batch_data, get_random_batch_sample, suffer_data
 from flearn.utils.tf_utils import graph_size
 from flearn.utils.tf_utils import process_grad
 
@@ -96,24 +96,21 @@ class Model(object):
         '''Solves local optimization problem'''
 
         if (batch_size == 0):  # Full data or batch_size
-            # print("Full dataset")
             batch_size = len(data['y'])
-
         # get w0
         wzero = self.get_params()
-
         # for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
         # if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
         #    num_epochs = np.random.randint(0, num_epochs+1)
+        # suffer data in hear before get on single data
 
-        for e in range(num_epochs):  # t = 1,2,3,4,5,...m
-            X, y = get_single_sample(data)
-
+        data_x, data_y = suffer_data(data)
+        for e in range(num_epochs):
+            X, y = get_random_batch_sample(data_x, data_y, batch_size)
             with self.graph.as_default():
                 # get the current weight
                 if(optimizer == "fedsvrg"):
                     current_weight = self.get_params()
-
                     # calculate fw0 first:
                     self.set_params(wzero)
                     fwzero = self.sess.run(self.grads, feed_dict={
@@ -137,14 +134,12 @@ class Model(object):
                         self.optimizer.set_preG(currentGrad, self)
                         _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
                             self.features: X, self.labels: y})
-
-                else:
+                else: # for average and Sgd
                     self.sess.run(self.train_op, feed_dict={
                                   self.features: X, self.labels: y})
         soln = self.get_params()
 
-        comp = num_epochs * \
-            (len(data['y'])//batch_size) * batch_size * self.flops
+        comp = num_epochs * (len(data['y'])//batch_size) * batch_size * self.flops
         return soln, comp
 
     def test(self, data):

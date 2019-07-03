@@ -2,7 +2,16 @@ import json
 import numpy as np
 import os
 
-
+def suffer_data(data):
+    data_x = data['x']
+    data_y = data['y']
+        # randomly shuffle data
+    np.random.seed(100)
+    rng_state = np.random.get_state()
+    np.random.shuffle(data_x)
+    np.random.set_state(rng_state)
+    np.random.shuffle(data_y)
+    return (data_x, data_y)
 def batch_data(data, batch_size):
     '''
     data is a dict := {'x': [numpy array], 'y': [numpy array]} (on one client)
@@ -25,16 +34,24 @@ def batch_data(data, batch_size):
         yield (batched_x, batched_y)
 
 
-def get_single_sample(data):
+def get_random_batch_sample(data_x, data_y, batch_size):
+    idx = np.random.choice(list(range(len(data_x-batch_size+1))))
+    return (data_x[idx: idx+batch_size], data_y[idx: idx+batch_size])
+
+
+def get_batch_sample(data, batch_size):
     data_x = data['x']
     data_y = data['y']
 
-    # randomly shuffle data
     np.random.seed(100)
+    rng_state = np.random.get_state()
+    np.random.shuffle(data_x)
+    np.random.set_state(rng_state)
+    np.random.shuffle(data_y)
 
-    idx = np.random.choice(list(range(len(data_x))))
-    return ([data_x[idx]], [data_y[idx]])
-
+    batched_x = data_x[0:batch_size]
+    batched_y = data_y[0:batch_size]
+    return (batched_x, batched_y)
 
 def read_data(train_data_dir, test_data_dir):
     '''parses data in given train and test data directories
