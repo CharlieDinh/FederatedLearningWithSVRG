@@ -7,7 +7,7 @@ import os
 
 random.seed(1)
 np.random.seed(1)
-
+NUMBER_USER = 100
 # Setup directory for train/test data
 train_path = './data/train/all_data_0_niid_0_keep_10_train_9.json'
 test_path = './data/test/all_data_0_niid_0_keep_10_test_9.json'
@@ -32,10 +32,10 @@ print([len(v) for v in mnist_data])
 
 ###### CREATE USER DATA SPLIT #######
 # Assign 10 samples to each user (5 samples for each 2 type of labels for each user)
-X = [[] for _ in range(1000)]
-y = [[] for _ in range(1000)]
+X = [[] for _ in range(NUMBER_USER)]
+y = [[] for _ in range(NUMBER_USER)]
 idx = np.zeros(10, dtype=np.int64)
-for user in range(1000):
+for user in range(NUMBER_USER):
     for j in range(2):  # 2 labels
         l = (user+j)%10
         # print("L:", l)
@@ -47,12 +47,12 @@ print("IDX1:", idx) # counting samples for each labels
 # Assign remaining sample by power law
 user = 0
 props = np.random.lognormal(0, 2.0, (10,100,2))
-props = np.array([[[len(v)-1000]] for v in mnist_data])*props/np.sum(props,(1,2), keepdims=True)
+props = np.array([[[len(v)-NUMBER_USER]] for v in mnist_data])*props/np.sum(props,(1,2), keepdims=True)
 #idx = 1000*np.ones(10, dtype=np.int64)
-for user in trange(1000):
+for user in trange(NUMBER_USER):
     for j in range(2):
         l = (user+j)%10
-        num_samples = int(props[l,user//10,j])
+        num_samples = int(props[l,user//10,j]) + NUMBER_USER
         #print(num_samples)
         if idx[l] + num_samples < len(mnist_data[l]):
             X[user] += mnist_data[l][idx[l]:idx[l]+num_samples].tolist()
@@ -66,7 +66,7 @@ train_data = {'users': [], 'user_data':{}, 'num_samples':[]}
 test_data = {'users': [], 'user_data':{}, 'num_samples':[]}
 
 # Setup 1000 users
-for i in trange(1000, ncols=120):
+for i in trange(NUMBER_USER, ncols=120):
     uname = 'f_{0:05d}'.format(i)
     
     combined = list(zip(X[i], y[i]))
