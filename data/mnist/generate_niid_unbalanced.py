@@ -7,7 +7,7 @@ import os
 
 random.seed(1)
 np.random.seed(1)
-NUM_USERS = 100
+NUM_USERS = 10
 
 # Setup directory for train/test data
 train_path = './data/train/all_data_0_niid_0_keep_10_train_9.json'

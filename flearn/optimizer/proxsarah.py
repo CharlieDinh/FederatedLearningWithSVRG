@@ -10,7 +10,7 @@ import flearn.utils.tf_utils as tf_utils
 class PROXSARAH(optimizer.Optimizer):
     """Implementation of Proximal Sarah, i.e., FedProx optimizer"""
 
-    def __init__(self, learning_rate=0.001, lamb=0.001, use_locking=False, name="PROXSARAH"):
+    def __init__(self, learning_rate=0.001, lamb = 0.001, use_locking = False, name="PROXSARAH"):
         super(PROXSARAH, self).__init__(use_locking, name)
         self._lr = learning_rate
         self._lamb = lamb
@@ -36,13 +36,11 @@ class PROXSARAH(optimizer.Optimizer):
         preG = self.get_slot(var, "preG")
         v_n_s = grad - preG + vzero
 
+        v_update = state_ops.assign(vzero, v_n_s)
         prox = tf_utils.prox_L2(var - lr_t * v_n_s, lamb_t)
         var_update = state_ops.assign(var, prox)
-        with tf.control_dependencies([var_update]):
-            v_update = state_ops.assign(vzero, v_n_s)
-            preG_update = state_ops.assign(preG, grad)
 
-        return control_flow_ops.group(*[var_update, v_update, preG_update])
+        return control_flow_ops.group(*[var_update, v_update, ])
 
     def set_vzero(self, vzero, client):
         with client.graph.as_default():

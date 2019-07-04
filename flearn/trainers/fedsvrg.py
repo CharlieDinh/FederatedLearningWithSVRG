@@ -78,6 +78,7 @@ class Server(BaseFedarated):
 
                 # get and set v0
                 grads = c.get_raw_grads()
+                c.set_vzero(grads)
                 self.inner_opt.set_vzero(grads, c.model)
 
                 # solve minimization locally

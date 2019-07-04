@@ -16,6 +16,9 @@ class Client(object):
         '''set model parameters'''
         self.model.set_params(model_params)
 
+    def set_vzero(self,vzero):
+        self.model.set_vzero(vzero)
+
     def get_params(self):
         '''get model parameters'''
         return self.model.get_params()
