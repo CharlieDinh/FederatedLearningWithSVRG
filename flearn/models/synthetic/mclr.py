@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tqdm import trange
 
-from flearn.utils.model_utils import batch_data, get_random_batch_sample, suffer_data
+from flearn.utils.model_utils import batch_data
 from flearn.utils.tf_utils import graph_size
 from flearn.utils.tf_utils import process_grad
 
@@ -16,7 +16,7 @@ class Model(object):
 
         # params
         self.num_classes = num_classes
-        self.optimizer = optimizer
+
         # create computation graph        
         self.graph = tf.Graph()
         with self.graph.as_default():
@@ -37,7 +37,7 @@ class Model(object):
         """Model function for Logistic Regression."""
         features = tf.placeholder(tf.float32, shape=[None, 60], name='features')
         labels = tf.placeholder(tf.int64, shape=[None,], name='labels')
-        logits = tf.layers.dense(inputs=features, units=self.num_classes, kernel_regularizer=tf.contrib.layers.l2_regularizer(0.1))
+        logits = tf.layers.dense(inputs=features, units=self.num_classes, kernel_regularizer=tf.contrib.layers.l2_regularizer(0.001))
         predictions = {
             "classes": tf.argmax(input=logits, axis=1),
                 "probabilities": tf.nn.softmax(logits, name="softmax_tensor")
@@ -57,9 +57,6 @@ class Model(object):
                 for variable, value in zip(all_vars, model_params):
                     variable.load(value, self.sess)
 
-    def set_vzero(self, vzero):
-        self.vzero = vzero
-
     def get_params(self):
         with self.graph.as_default():
             model_params = self.sess.run(tf.trainable_variables())
@@ -76,75 +73,16 @@ class Model(object):
             grads = process_grad(model_grads)
 
         return num_samples, grads
-    def get_raw_gradients(self, data):
-    
-        with self.graph.as_default():
-            model_grads = self.sess.run(self.grads,
-                                        feed_dict={self.features: data['x'], self.labels: data['y']})
-        return model_grads
     
     def solve_inner(self, optimizer, data, num_epochs=1, batch_size=32):
         '''Solves local optimization problem'''
-
-        if (batch_size == 0):  # Full data or batch_size
-            # print("Full dataset")
-            batch_size = len(data['y'])
-
-        # get w0
-        wzero = self.get_params()
-        data_x, data_y = suffer_data(data)
-        #w1 = prox_L2(wzero - self.optimizer._lr * np.array(self.vzero), self.optimizer._lamb)
-        #with self.graph.as_default():
-        #    w1 = wzero - 0.01 * self.vzero
-        #    self.sess.run(w1)
-        if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
-            w1 = wzero - self.optimizer._lr * np.array(self.vzero)
-            self.set_params(w1)
-        # for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
-        #if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
-        #    num_epochs = np.random.randint(0, num_epochs+1)
-
-        for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
-            X, y = get_random_batch_sample(data_x, data_y, batch_size)
-            with self.graph.as_default():
-                # get the current weight
-                if(optimizer == "fedsvrg"):
-                    current_weight = self.get_params()
-                    # calculate fw0 first:
-                    self.set_params(wzero)
-                    fwzero = self.sess.run(self.grads, feed_dict={
-                                           self.features: X, self.labels: y})
-                    self.optimizer.set_fwzero(fwzero, self)
-
-                    # return the current weight to the model
-                    self.set_params(current_weight)
-                    self.sess.run(self.train_op, feed_dict={
-                                  self.features: X, self.labels: y})
-                elif(optimizer == "fedsarah"):
-                    if(_ == 0):
-                        firstGrad = self.sess.run(self.grads, feed_dict={
-                                                  self.features: X, self.labels: y})
-                        # update gradient of w_0
-                        self.optimizer.set_preG(firstGrad, self)
-                        self.sess.run(self.train_op, feed_dict={
-                                      self.features: X, self.labels: y})
-                        currentGrad = self.sess.run(self.grads, feed_dict={
-                            self.features: X, self.labels: y})
-                    else:
-                            # update previous gradient
-                        self.optimizer.set_preG(currentGrad, self)
-                        self.sess.run(self.train_op, feed_dict={
-                                      self.features: X, self.labels: y})
-
-                        currentGrad = self.sess.run(self.grads, feed_dict={
-                            self.features: X, self.labels: y})
-                else:
-                    self.sess.run(self.train_op, feed_dict={
-                                  self.features: X, self.labels: y})
+        for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
+            for X, y in batch_data(data, batch_size):
+                with self.graph.as_default():
+                    _, pred = self.sess.run([self.train_op, self.pred], 
+                        feed_dict={self.features: X, self.labels: y})
         soln = self.get_params()
-
-        comp = num_epochs * \
-            (len(data['y'])//batch_size) * batch_size * self.flops
+        comp = num_epochs * (len(data['y'])//batch_size) * batch_size * self.flops
         return soln, comp
     
     def test(self, data):
