@@ -45,7 +45,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
                         help='name of dataset;',
                         type=str,
                         choices=DATASETS,
-                        default='mnist')
+                        default='synthetic_0.5_0.5')
     parser.add_argument('--model',
                         help='name of model;',
                         type=str,
@@ -65,7 +65,8 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
     parser.add_argument('--batch_size',
                         help='batch size when clients train on data;',
                         type=int,
-                        default=1)  # 0 is full dataset
+                        default=10
+                        )  # 0 is full dataset
     parser.add_argument('--num_epochs',
                         help='number of epochs when clients train on data;',
                         type=int,
@@ -77,7 +78,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
     parser.add_argument('--mu',
                         help='constant for prox;',
                         type=float,
-                        default=1.)  # 0.01
+                        default=0.)  # 0.01
     parser.add_argument('--seed',
                         help='seed for randomness;',
                         type=int,
@@ -111,7 +112,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
             'flearn', 'models', parsed['dataset'], parsed['model'])
 
     # mod = importlib.import_module(model_path)
-    import flearn.models.mnist.mclr as mclr
+    import flearn.models.synthetic.mclr_backup as mclr
     mod = mclr
     learner = getattr(mod, 'Model')
 
@@ -212,23 +213,18 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
 
 
 if __name__ == '__main__':
-    algorithms_list = ["fedsarah"]
-    lamb_value = [0.001]
-    #algorithms_list = ["fedavg"]
-    #lamb_value =    [0.001, 0.0001, 0.001]
-    #learning_rate = [0.005, 0.01, 0.001]
-    #lamb_value = [0]
-    learning_rate = [0.001]
+    algorithms_list =  ["fedsarah","fedsvrg","fedsgd","fedavg"]
+    lamb_value =    [0.0001,0.0001,0.0001,0]
+    learning_rate = [0.005,0.005,0.005,0.005]
     if(0):
-        #plot_summary(loc_ep1=50, loc_ep2=20)
         plot_summary(num_users=100, loc_ep1=50, Numb_Glob_Iters=100,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
         for i in range(len(algorithms_list)):
-            main(num_users=10, loc_ep=50, Numb_Glob_Iters=100,
-                 lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
+            main(num_users=10, loc_ep=20, Numb_Glob_Iters=200,
+                lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
-        plot_summary(num_users=10, loc_ep1=50, Numb_Glob_Iters=100,
+        plot_summary(num_users=10, loc_ep1=20, Numb_Glob_Iters=200,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)
