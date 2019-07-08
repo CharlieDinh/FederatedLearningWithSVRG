@@ -45,7 +45,7 @@ class Model(object):
             tf.float32, shape=[None, 784], name='features')
         labels = tf.placeholder(tf.int64, shape=[None, ], name='labels')
         logits = tf.layers.dense(inputs=features, units=self.num_classes, kernel_regularizer=tf.contrib.layers.l2_regularizer(
-            0.001))  # 0.001  #Linear layer without regularizer
+            0.1))  # 0.001  #Linear layer without regularizer
         predictions = {
             "classes": tf.argmax(input=logits, axis=1),
             "probabilities": tf.nn.softmax(logits, name="softmax_tensor")
@@ -96,59 +96,52 @@ class Model(object):
 
     def solve_inner(self, optimizer, data, num_epochs=1, batch_size=32):
         '''Solves local optimization problem'''
-
         if (batch_size == 0):  # Full data or batch_size
             # print("Full dataset")
             batch_size = len(data['y'])
 
-        # get w0
-        wzero = self.get_params()
-        data_x, data_y = suffer_data(data)
-        #w1 = prox_L2(wzero - self.optimizer._lr * np.array(self.vzero), self.optimizer._lamb)
-        #with self.graph.as_default():
-        #    w1 = wzero - 0.01 * self.vzero
-        #    self.sess.run(w1)
-        if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
-            w1 = wzero - self.optimizer._lr * np.array(self.vzero)
-            self.set_params(w1)
-        # for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
-        #if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
-        #    num_epochs = np.random.randint(0, num_epochs+1)
-
-        for _ in range(num_epochs): # t = 1,2,3,4,5,...m
-            X, y = get_random_batch_sample(data_x, data_y, batch_size)
-            with self.graph.as_default():
-                # get the current weight
-                if(optimizer == "fedsvrg"):
-                    current_weight = self.get_params()
-                        # calculate fw0 first:
-                    self.set_params(wzero)
-                    fwzero = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})
-                    self.optimizer.set_fwzero(fwzero, self)
-
-                        # return the current weight to the model
-                    self.set_params(current_weight)
-                    self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
-                elif(optimizer == "fedsarah"):
-                    if(_ == 0):  
-                        firstGrad = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})
-                            # update gradient of w_0
-                        self.optimizer.set_preG(firstGrad, self)
+        if(optimizer == "fedavg"):
+            for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
+                for X, y in batch_data(data, batch_size):
+                    with self.graph.as_default():
                         self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
-                        currentGrad = self.sess.run(self.grads, feed_dict={
-                                                        self.features: X, self.labels: y})
-                    else: 
-                            # update previous gradient
-                        self.optimizer.set_preG(currentGrad, self)
-                        self.sess.run(self.train_op, feed_dict={
-                                      self.features: X, self.labels: y})
-                                      
-                        currentGrad = self.sess.run(self.grads, feed_dict={
-                        self.features: X, self.labels: y})
-                else:
-                    self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
-        soln = self.get_params()
+        else:
+            wzero = self.get_params()
+            data_x, data_y = suffer_data(data)
+            w1 = wzero - self.optimizer._lr * np.array(self.vzero)
+            w1 = prox_L2(w1, wzero, self.optimizer._lr, self.optimizer._lamb)
+            self.set_params(w1)
 
+            for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
+                X, y = get_random_batch_sample(data_x, data_y, batch_size)
+                with self.graph.as_default():
+                    # get the current weight
+                    if(optimizer == "fedsvrg"):
+                        current_weight = self.get_params()
+                        # calculate fw0 first:
+                        self.set_params(wzero)
+                        fwzero = self.sess.run(self.grads, feed_dict={
+                            self.features: X, self.labels: y})
+                        self.optimizer.set_fwzero(fwzero, self)
+                        # return the current weight to the model
+                        self.set_params(current_weight)
+                        self.sess.run(self.train_op, feed_dict={
+                            self.features: X, self.labels: y})
+                    elif(optimizer == "fedsarah"):
+                        if(_ == 0):
+                            firstGrad = self.sess.run(self.grads, feed_dict={
+                                self.features: X, self.labels: y})  # grad w0)
+                            self.optimizer.set_preG(firstGrad, self)
+                            _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
+                                self.features: X, self.labels: y})
+                        else:
+                            self.optimizer.set_preG(currentGrad, self)
+                            _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
+                                self.features: X, self.labels: y})
+                    else:   # for fedsgd
+                        self.sess.run(self.train_op, feed_dict={
+                            self.features: X, self.labels: y})
+        soln = self.get_params()
         comp = num_epochs * \
             (len(data['y'])//batch_size) * batch_size * self.flops
         return soln, comp

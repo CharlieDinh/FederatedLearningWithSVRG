@@ -27,6 +27,7 @@ class PROXSARAH(optimizer.Optimizer):
         for v in var_list:
             self._zeros_slot(v, "vzero", self._name)
             self._zeros_slot(v, "preG", self._name)
+            self._zeros_slot(v, "wzero", self._name)
 
     def _apply_dense(self, grad, var):
         lr_t = math_ops.cast(self._lr_t, var.dtype.base_dtype)
@@ -34,10 +35,13 @@ class PROXSARAH(optimizer.Optimizer):
 
         vzero = self.get_slot(var, "vzero")
         preG = self.get_slot(var, "preG")
-        v_n_s = grad - preG + vzero
+        wzero = self.get_slot(var, "wzero")
 
+        v_n_s = grad - preG + vzero
         v_update = state_ops.assign(vzero, v_n_s)
-        prox = tf_utils.prox_L2(var - lr_t * v_n_s, lamb_t)
+        v_t = var - lr_t * v_n_s
+        #prox = tf_utils.prox_L2(var - lr_t * v_n_s, lamb_t)
+        prox = tf_utils.prox_L2(v_t, wzero, lr_t, lamb_t)
         var_update = state_ops.assign(var, prox)
 
         return control_flow_ops.group(*[var_update, v_update, ])
@@ -54,4 +58,11 @@ class PROXSARAH(optimizer.Optimizer):
             all_vars = tf.trainable_variables()
             for variable, value in zip(all_vars, fwzero):
                 v = self.get_slot(variable, "preG")
+                v.load(value, client.sess)
+
+    def set_wzero(self, wzero, client):
+        with client.graph.as_default():
+            all_vars = tf.trainable_variables()
+            for variable, value in zip(all_vars, wzero):
+                v = self.get_slot(variable, "wzero")
                 v.load(value, client.sess)

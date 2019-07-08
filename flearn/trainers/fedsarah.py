@@ -13,10 +13,7 @@ from flearn.utils.tf_utils import process_grad, process_sparse_grad
 class Server(BaseFedarated):
     def __init__(self, params, learner, dataset):
         print('Using Federated prox to Train')
-        if(params["lamb"] > 0):
-            self.inner_opt = PROXSARAH(params['learning_rate'], params["lamb"])
-        else:
-            self.inner_opt = SARAH(params['learning_rate'])
+        self.inner_opt = PROXSARAH(params['learning_rate'], params["lamb"])
         #self.seed = 1
         super(Server, self).__init__(params, learner, dataset)
 
@@ -75,7 +72,7 @@ class Server(BaseFedarated):
             for c in selected_clients:
                 # communicate the latest model
                 c.set_params(self.latest_model)
-
+                self.inner_opt.set_wzero(self.latest_model, c.model)
                 # get and set v0
                 grads = c.get_raw_grads()
                 c.set_vzero(grads)
