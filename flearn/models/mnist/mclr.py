@@ -109,7 +109,7 @@ class Model(object):
             wzero = self.get_params()
             data_x, data_y = suffer_data(data)
             w1 = wzero - self.optimizer._lr * np.array(self.vzero)
-            w1 = prox_L2(w1, wzero, self.optimizer._lr, self.optimizer._lamb)
+            w1 = prox_L2(np.array(w1), np.array(wzero), self.optimizer._lr, self.optimizer._lamb)
             self.set_params(w1)
 
             for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
@@ -129,15 +129,19 @@ class Model(object):
                             self.features: X, self.labels: y})
                     elif(optimizer == "fedsarah"):
                         if(_ == 0):
-                            firstGrad = self.sess.run(self.grads, feed_dict={
-                                self.features: X, self.labels: y})  # grad w0)
-                            self.optimizer.set_preG(firstGrad, self)
+                            self.set_params(wzero)
+                            grad_w0 = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})  # grad w0)
+                            self.optimizer.set_preG(grad_w0, self)
+
+                            self.set_params(w1)
+
+                            _, grad_w1 = self.sess.run([self.train_op,self.grads], feed_dict={self.features: X, self.labels: y})
+                            self.optimizer.set_preG(grad_w1, self)
+                            # at this moment w2 
+                        else: # caculate w_3
                             _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
                                 self.features: X, self.labels: y})
-                        else:
                             self.optimizer.set_preG(currentGrad, self)
-                            _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
-                                self.features: X, self.labels: y})
                     else:   # for fedsgd
                         self.sess.run(self.train_op, feed_dict={
                             self.features: X, self.labels: y})
