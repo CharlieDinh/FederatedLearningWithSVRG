@@ -36,12 +36,15 @@ class PROXSARAH(optimizer.Optimizer):
         vzero = self.get_slot(var, "vzero")
         preG = self.get_slot(var, "preG")
         wzero = self.get_slot(var, "wzero")
+
+        v_zero_mean = tf.reduce_mean(vzero)
         print_op = tf.print('vzero: ', vzero)
+        print_op_mean = tf.print('vzero mean: ', v_zero_mean)
 
         v_n_s = grad - preG + vzero
         print_vns = tf.print('vns:', v_n_s)
 
-        with tf.control_dependencies([print_op, print_vns]):
+        with tf.control_dependencies([print_op, print_vns, print_op_mean]):
             v_update = state_ops.assign(vzero, v_n_s)
         v_t = var - lr_t * v_n_s
         #prox = tf_utils.prox_L2(var - lr_t * v_n_s, lamb_t)
