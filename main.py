@@ -213,16 +213,16 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
 
 
 if __name__ == '__main__':
-    algorithms_list =  ["fedsarah","fedsvrg","fedsgd","fedavg"]
-    lamb_value =    [0.0001,0.0001,0.0001,0]
-    learning_rate = [0.005,0.005,0.005,0.005]
+    algorithms_list = ["fedsarah"]
+    lamb_value = [0.0001]
+    learning_rate = [0.005]
     if(0):
         plot_summary(num_users=100, loc_ep1=50, Numb_Glob_Iters=100,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
         for i in range(len(algorithms_list)):
             main(num_users=10, loc_ep=20, Numb_Glob_Iters=200,
-                lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
+                 lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
         plot_summary(num_users=10, loc_ep1=20, Numb_Glob_Iters=200,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
