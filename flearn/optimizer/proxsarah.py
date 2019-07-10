@@ -29,6 +29,31 @@ class PROXSARAH(optimizer.Optimizer):
             self._zeros_slot(v, "preG", self._name)
             self._zeros_slot(v, "wzero", self._name)
 
+    #def _apply_dense(self, grad, var):
+    #    lr_t = math_ops.cast(self._lr_t, var.dtype.base_dtype)
+    #    lamb_t = math_ops.cast(self._lamb_t, var.dtype.base_dtype)
+
+    #    vzero = self.get_slot(var, "vzero")
+    #    preG = self.get_slot(var, "preG")
+    #    wzero = self.get_slot(var, "wzero")
+
+    #    v_zero_mean = tf.reduce_mean(vzero)
+    #    print_op = tf.print('vzero: ', vzero)
+     #   print_op_mean = tf.print('vzero mean: ', v_zero_mean)
+
+    #    v_n_s = grad - preG + vzero
+    #    print_vns = tf.print('vns:', v_n_s)
+
+    #    with tf.control_dependencies([print_op, print_vns, print_op_mean]):
+    #        v_update = state_ops.assign(vzero, v_n_s)
+    #    v_t = var - lr_t * v_n_s
+        #prox = tf_utils.prox_L2(var - lr_t * v_n_s, lamb_t)
+    #    prox = tf_utils.prox_L2(v_t, wzero, lr_t, lamb_t)
+    #    var_update = state_ops.assign(var, prox)
+
+    #    return control_flow_ops.group(*[var_update, v_update, ])
+
+
     def _apply_dense(self, grad, var):
         lr_t = math_ops.cast(self._lr_t, var.dtype.base_dtype)
         lamb_t = math_ops.cast(self._lamb_t, var.dtype.base_dtype)
@@ -37,15 +62,8 @@ class PROXSARAH(optimizer.Optimizer):
         preG = self.get_slot(var, "preG")
         wzero = self.get_slot(var, "wzero")
 
-        v_zero_mean = tf.reduce_mean(vzero)
-        print_op = tf.print('vzero: ', vzero)
-        print_op_mean = tf.print('vzero mean: ', v_zero_mean)
-
         v_n_s = grad - preG + vzero
-        print_vns = tf.print('vns:', v_n_s)
-
-        with tf.control_dependencies([print_op, print_vns, print_op_mean]):
-            v_update = state_ops.assign(vzero, v_n_s)
+        v_update = state_ops.assign(vzero, v_n_s)
         v_t = var - lr_t * v_n_s
         #prox = tf_utils.prox_L2(var - lr_t * v_n_s, lamb_t)
         prox = tf_utils.prox_L2(v_t, wzero, lr_t, lamb_t)
@@ -73,3 +91,20 @@ class PROXSARAH(optimizer.Optimizer):
             for variable, value in zip(all_vars, wzero):
                 v = self.get_slot(variable, "wzero")
                 v.load(value, client.sess)
+
+    def _apply_dense(self, grad, var):
+        lr_t = math_ops.cast(self._lr_t, var.dtype.base_dtype)
+        lamb_t = math_ops.cast(self._lamb_t, var.dtype.base_dtype)
+
+        vzero = self.get_slot(var, "vzero")
+        preG = self.get_slot(var, "preG")
+        wzero = self.get_slot(var, "wzero")
+
+        v_n_s = grad - preG + vzero
+        v_update = state_ops.assign(vzero, v_n_s)
+        v_t = var - lr_t * v_n_s
+        #prox = tf_utils.prox_L2(var - lr_t * v_n_s, lamb_t)
+        prox = tf_utils.prox_L2(v_t, wzero, lr_t, lamb_t)
+        var_update = state_ops.assign(var, prox)
+
+        return control_flow_ops.group(*[var_update, v_update, ])

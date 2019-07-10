@@ -18,7 +18,7 @@ class Model(object):
         self.num_classes = num_classes
 
         self.optimizer = optimizer
-        # self.vzero =
+        #self.vzero =
         # create computation graph
         self.graph = tf.Graph()
         with self.graph.as_default():
@@ -115,7 +115,7 @@ class Model(object):
                          self.optimizer._lr, self.optimizer._lamb)
             self.set_params(w1)
 
-            for e in range(num_epochs):  # t = 1,2,3,4,5,...m
+            for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
                 X, y = get_random_batch_sample(data_x, data_y, batch_size)
                 with self.graph.as_default():
                     # get the current weight
@@ -131,7 +131,7 @@ class Model(object):
                         self.sess.run(self.train_op, feed_dict={
                             self.features: X, self.labels: y})
                     elif(optimizer == "fedsarah"):
-                        if(e == 0):
+                        if(_ == 0):
                             self.set_params(wzero)
                             grad_w0 = self.sess.run(self.grads, feed_dict={
                                                     self.features: X, self.labels: y})  # grad w0)
@@ -143,13 +143,9 @@ class Model(object):
                                                        self.features: X, self.labels: y})
                             self.optimizer.set_preG(grad_w1, self)
                             # at this moment w2
-                        elif e == 5:
-                            exit()
                         else:  # caculate w_3
-                            print('-------------------------------')
                             _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
                                 self.features: X, self.labels: y})
-                            print('===============================')
                             self.optimizer.set_preG(currentGrad, self)
                     else:   # for fedsgd
                         self.sess.run(self.train_op, feed_dict={
