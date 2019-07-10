@@ -12,11 +12,7 @@ from flearn.utils.tf_utils import process_grad, process_sparse_grad
 class Server(BaseFedarated):
     def __init__(self, params, learner, dataset):
         print('Using Federated SGD to Train')
-        if(params["lamb"] > 0):
-            self.inner_opt = PROXSGD(params['learning_rate'], params["lamb"])
-        else:
-            self.inner_opt = tf.train.GradientDescentOptimizer(
-                params['learning_rate'])
+        self.inner_opt = PROXSGD(params['learning_rate'], params["lamb"])
         #self.seed = 1
         super(Server, self).__init__(params, learner, dataset)
 

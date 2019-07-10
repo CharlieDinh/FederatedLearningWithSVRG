@@ -45,7 +45,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
                         help='name of dataset;',
                         type=str,
                         choices=DATASETS,
-                        default='synthetic_0.5_0.5')
+                        default='mnist')
     parser.add_argument('--model',
                         help='name of model;',
                         type=str,
@@ -65,7 +65,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
     parser.add_argument('--batch_size',
                         help='batch size when clients train on data;',
                         type=int,
-                        default=10
+                        default=1
                         )  # 0 is full dataset
     parser.add_argument('--num_epochs',
                         help='number of epochs when clients train on data;',
@@ -112,7 +112,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
             'flearn', 'models', parsed['dataset'], parsed['model'])
 
     # mod = importlib.import_module(model_path)
-    import flearn.models.synthetic.mclr_backup as mclr
+    import flearn.models.mnist.mclr as mclr
     mod = mclr
     learner = getattr(mod, 'Model')
 
@@ -214,18 +214,18 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
 
 
 if __name__ == '__main__':
-    algorithms_list = ["fedsarah"]
-    lamb_value = [0.0001]
-    learning_rate = [0.005]
+    algorithms_list = ["fedsarah", "fedsgd"]
+    lamb_value = [0,0]
+    learning_rate = [0.0005, 0.0005]
     if(0):
         plot_summary(num_users=100, loc_ep1=50, Numb_Glob_Iters=100,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
         for i in range(len(algorithms_list)):
-            main(num_users=10, loc_ep=20, Numb_Glob_Iters=200,
+            main(num_users=100, loc_ep=20, Numb_Glob_Iters=100,
                  lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
-        plot_summary(num_users=10, loc_ep1=20, Numb_Glob_Iters=200,
+        plot_summary(num_users=100, loc_ep1=20, Numb_Glob_Iters=100,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)

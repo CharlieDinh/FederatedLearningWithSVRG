@@ -111,8 +111,7 @@ class Model(object):
             wzero = self.get_params()
             data_x, data_y = suffer_data(data)
             w1 = wzero - self.optimizer._lr * np.array(self.vzero)
-            w1 = prox_L2(np.array(w1), np.array(wzero),
-                         self.optimizer._lr, self.optimizer._lamb)
+            w1 = prox_L2(np.array(w1), np.array(wzero),self.optimizer._lr, self.optimizer._lamb)
             self.set_params(w1)
 
             for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
@@ -121,11 +120,12 @@ class Model(object):
                     # get the current weight
                     if(optimizer == "fedsvrg"):
                         current_weight = self.get_params()
+                    
                         # calculate fw0 first:
                         self.set_params(wzero)
-                        fwzero = self.sess.run(self.grads, feed_dict={
-                            self.features: X, self.labels: y})
+                        fwzero = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})
                         self.optimizer.set_fwzero(fwzero, self)
+
                         # return the current weight to the model
                         self.set_params(current_weight)
                         self.sess.run(self.train_op, feed_dict={
@@ -136,20 +136,12 @@ class Model(object):
                             grad_w0 = self.sess.run(self.grads, feed_dict={
                                                     self.features: X, self.labels: y})  # grad w0)
                             self.optimizer.set_preG(grad_w0, self)
-
                             self.set_params(w1)
 
-                            _, grad_w1 = self.sess.run([self.train_op, self.grads], feed_dict={
-                                                       self.features: X, self.labels: y})
-                            self.optimizer.set_preG(grad_w1, self)
-                            # at this moment w2
-                        else:  # caculate w_3
-                            _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={
-                                self.features: X, self.labels: y})
-                            self.optimizer.set_preG(currentGrad, self)
-                    else:   # for fedsgd
-                        self.sess.run(self.train_op, feed_dict={
-                            self.features: X, self.labels: y})
+                        _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={self.features: X, self.labels: y})
+                        self.optimizer.set_preG(currentGrad, self)
+                    else:   # fedsgd
+                        self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
         soln = self.get_params()
         comp = num_epochs * \
             (len(data['y'])//batch_size) * batch_size * self.flops
