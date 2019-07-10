@@ -137,9 +137,21 @@ class Model(object):
                                                     self.features: X, self.labels: y})  # grad w0)
                             self.optimizer.set_preG(grad_w0, self)
                             self.set_params(w1)
+                            preW = self.get_params()   # previous is w1 
+                            self.sess.run(self.train_op, feed_dict={
+                                self.features: X, self.labels: y})
+                        else: 
+                         # == w1
+                            curW = self.get_params()
 
-                        _, currentGrad = self.sess.run([self.train_op, self.grads], feed_dict={self.features: X, self.labels: y})
-                        self.optimizer.set_preG(currentGrad, self)
+                            # get previous grad
+                            self.set_params(preW)
+                            grad_preW = self.sess.run(self.grads, feed_dict={self.features: X, self.labels: y})  # grad w0)
+                            self.optimizer.set_preG(grad_preW, self)
+                            preW = curW
+                            # return back curent grad 
+                            self.set_params(curW)
+                            self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
                     else:   # fedsgd
                         self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
         soln = self.get_params()
