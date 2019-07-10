@@ -221,9 +221,9 @@ if __name__ == '__main__':
         plot_summary(num_users=100, loc_ep1=50, Numb_Glob_Iters=100,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
-        #for i in range(len(algorithms_list)):
-        #    main(num_users=10, loc_ep=20, Numb_Glob_Iters=80,
-        #        lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
+        for i in range(len(algorithms_list)):
+            main(num_users=10, loc_ep=20, Numb_Glob_Iters=80,
+                lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
         plot_summary(num_users=10, loc_ep1=30, Numb_Glob_Iters=80,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
