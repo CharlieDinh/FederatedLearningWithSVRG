@@ -179,8 +179,9 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
         algs_lbl[i] = algs_lbl[i] + "_" + str(loc_ep1)
 
     plt.figure(1)
+    linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
     for i in range(Numb_Algs):
-        plt.plot(train_acc[i, 1:], linestyle=":", label=algs_lbl[i])
+        plt.plot(train_acc[i, 1:],linestyle=linestyles[i], label=algs_lbl[i])
         #plt.plot(train_acc1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
     plt.ylabel('Training Accuracy')
@@ -191,7 +192,7 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
 
     plt.figure(2)
     for i in range(Numb_Algs):
-        plt.plot(train_loss[i, 1:], linestyle=":", label=algs_lbl[i])
+        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
         #plt.plot(train_loss1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
     plt.ylabel('Training Loss')
@@ -202,7 +203,7 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
 
     plt.figure(3)
     for i in range(Numb_Algs):
-        plt.plot(glob_acc[i, 1:], linestyle=":", label=algs_lbl[i])
+        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
         #plt.plot(glob_acc1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
     plt.ylabel('Test Accuracy')
