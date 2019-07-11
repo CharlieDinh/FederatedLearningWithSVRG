@@ -7,11 +7,14 @@ import os
 
 random.seed(1)
 np.random.seed(1)
-NUM_USERS = 10
-NUM_LABEL = 3  # labels for each users
+
+NUMBER_USER = 100
+NUMBER_ClASS_PER_USERS = 3
 # Setup directory for train/test data
-train_path = './data/train/all_data_0_niid_0_keep_10_train_9.json'
-test_path = './data/test/all_data_0_niid_0_keep_10_test_9.json'
+train_path = './data/train/mnist_niid_equal_train.json'
+test_path = './data/test/mnist_niid_equal_train.json'
+
+
 dir_path = os.path.dirname(train_path)
 if not os.path.exists(dir_path):
     os.makedirs(dir_path)
@@ -24,50 +27,47 @@ mnist = fetch_mldata('MNIST original', data_home='./data')
 mu = np.mean(mnist.data.astype(np.float32), 0)
 sigma = np.std(mnist.data.astype(np.float32), 0)
 mnist.data = (mnist.data.astype(np.float32) - mu)/(sigma+0.001)
+
+# set mean
+num_sample_mean = len(mnist.data)//NUMBER_USER//NUMBER_ClASS_PER_USERS
+
+#normal_std = np.sqrt(np.log(1 + (10/num_sample_mean)**2))
+#normal_mean = np.log(num_sample_mean) - 10**2 / 2
+
+#props = np.random.lognormal(100, 0,(NUMBER_USER, NUMBER_ClASS_PER_USERS))
+
 mnist_data = []
 for i in trange(10):
     idx = mnist.target == i
     mnist_data.append(mnist.data[idx])
-
-print("\nNumb samples of each label:\n", [len(v) for v in mnist_data])
+print("Len of each class in mnist_data")
+print([len(v) for v in mnist_data])
 
 ###### CREATE USER DATA SPLIT #######
-# Assign 100 samples to each user
-X = [[] for _ in range(NUM_USERS)]
-y = [[] for _ in range(NUM_USERS)]
+# Assign 10 samples to each user (5 samples for each 2 type of labels for each user)
+X = [[] for _ in range(NUMBER_USER)]
+y = [[] for _ in range(NUMBER_USER)]
 idx = np.zeros(10, dtype=np.int64)
-for user in range(NUM_USERS):
-    print("------user_id-----", user)
-    for j in range(NUM_LABEL):  # 3 labels for each users
-        # l = (2*user+j)%10
-        l = (user + j) % 10
-        print("L:", l)
-        X[user] += mnist_data[l][idx[l]:idx[l]+10].tolist()
-        y[user] += (l*np.ones(10)).tolist()
-        idx[l] += 10
 
+for user in range(NUMBER_USER):
+    for j in range(NUMBER_ClASS_PER_USERS):  # 2 labels
+        l = (user+j) % 10
+        # print("L:", l)
+        X[user] += mnist_data[l][idx[l]:idx[l]+num_sample_mean].tolist()
+        y[user] += (l*np.ones(num_sample_mean)).tolist()
+        idx[l] += num_sample_mean
 print("IDX1:", idx)  # counting samples for each labels
 
-# Assign remaining sample by power law
-user = 0
-props = np.random.lognormal(
-    4, 4, (10, NUM_USERS, NUM_LABEL))  # last 5 is 5 labels
-# print("here:",props/np.sum(props,(1,2), keepdims=True))
-#props = np.array([[[len(v)]] for v in mnist_data]) * props/np.sum(props, (1, 2), keepdims=True)
-#idx = 1000*np.ones(10, dtype=np.int64)
-# print("here2:",props)
-for user in trange(NUM_USERS):
-    for j in range(NUM_LABEL):  # 4 labels for each users
-        # l = (2*user+j)%10
-        l = (user + j) % 10
-        #num_samples = int(props[l,user//int(NUM_USERS/10),j])
-        #num_samples = min(num_samples,200)
-        num_samples = int(props[l, user, j])
-        # print(num_samples)
+num_samples = num_sample_mean
+# 200 sample for each class
+for user in trange(NUMBER_USER):
+    for j in range(NUMBER_ClASS_PER_USERS):
+        l = (user+j) % 10
         if idx[l] + num_samples < len(mnist_data[l]):
             X[user] += mnist_data[l][idx[l]:idx[l]+num_samples].tolist()
             y[user] += (l*np.ones(num_samples)).tolist()
             idx[l] += num_samples
+            # Assign remaining sample by power law
 
 print("IDX2:", idx)  # counting samples for each labels
 
@@ -75,9 +75,8 @@ print("IDX2:", idx)  # counting samples for each labels
 train_data = {'users': [], 'user_data': {}, 'num_samples': []}
 test_data = {'users': [], 'user_data': {}, 'num_samples': []}
 
-# Setup 5 users
-# for i in trange(5, ncols=120):
-for i in range(NUM_USERS):
+# Setup 1000 users
+for i in trange(NUMBER_USER, ncols=120):
     uname = 'f_{0:05d}'.format(i)
 
     combined = list(zip(X[i], y[i]))
