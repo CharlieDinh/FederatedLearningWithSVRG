@@ -13,9 +13,10 @@ import h5py
 
 # GLOBAL PARAMETERS
 OPTIMIZERS = ['fedavg', 'fedprox', 'fedsvrg', 'fedsarah', 'fedsgd']
-DATASETS = ['sent140', 'nist', 'shakespeare', 'mnist', 'synthetic_iid',
-            'synthetic_0_0', 'synthetic_0.5_0.5', 'synthetic_1_1']  # NIST is EMNIST in the paepr
 
+DATASETS = ['sent140', 'nist', 'shakespeare', 'mnist', 'synthetic_iid', 'synthetic_0_0', 'synthetic_0.5_0.5', 'synthetic_1_1', 'fashion_mnist']  # NIST is EMNIST in the paper
+
+DATA_SET = "mnist"
 
 MODEL_PARAMS = {
     'sent140.bag_dnn': (2,),  # num_classes
@@ -27,6 +28,8 @@ MODEL_PARAMS = {
     'nist.cnn': (62,),
     'mnist.mclr': (10,),  # num_classes
     'mnist.cnn': (10,),  # num_classes
+    'fashion_mnist.mclr':(10,),
+    'fashion_mnist.cnn': (10,),
     'shakespeare.stacked_lstm': (80, 80, 256),  # seq_len, emb_dim, num_hidden
     'synthetic.mclr': (10, )  # num_classes
 }
@@ -45,7 +48,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
                         help='name of dataset;',
                         type=str,
                         choices=DATASETS,
-                        default='mnist')
+                        default=DATA_SET)
     parser.add_argument('--model',
                         help='name of model;',
                         type=str,
@@ -175,8 +178,8 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
             algs_lbl[i] = algs_lbl[i] + "_prox"
         algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i])
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
-            simple_read_data(loc_ep1, algorithms_list[i]))[:, :Numb_Glob_Iters]
-        algs_lbl[i] = algs_lbl[i] + "_" + str(loc_ep1)
+            simple_read_data(loc_ep1[i], algorithms_list[i]))[:, :Numb_Glob_Iters]
+        algs_lbl[i] = algs_lbl[i] + "_" + str(loc_ep1[i])
 
     plt.figure(1)
     linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
@@ -195,10 +198,12 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
         plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
         #plt.plot(train_loss1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
+    #plt.ylim([0, 0.3])
     plt.ylabel('Training Loss')
     plt.xlabel('Number of Global Iterations')
     plt.title('Number of users: ' + str(num_users) +
               ', Lr: ' + str(learning_rate[0]))
+    #plt.ylim([train_loss.min(), 0.3])
     plt.savefig('train_loss.png')
 
     plt.figure(3)
@@ -206,6 +211,7 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
         plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
         #plt.plot(glob_acc1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
+    #plt.ylim([0.9, glob_acc.max()])
     plt.ylabel('Test Accuracy')
     plt.xlabel('Number of Global Iterations')
     plt.title('Number of users: ' + str(num_users) +
@@ -217,15 +223,14 @@ if __name__ == '__main__':
     algorithms_list = ["fedsarah", "fedsgd", "fedsvrg"]
     lamb_value = [0,0,0]
     learning_rate = [0.01, 0.01, 0.01]
+    local_ep = [20,20,20]
     if(0):
         plot_summary(num_users=100, loc_ep1=50, Numb_Glob_Iters=100,
                      lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
         for i in range(len(algorithms_list)):
-            main(num_users=10, loc_ep=20, Numb_Glob_Iters=80,
-                lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
+            main(num_users=10, loc_ep=local_ep[i], Numb_Glob_Iters = 200, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
-        plot_summary(num_users=10, loc_ep1=30, Numb_Glob_Iters=80,
-                     lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
+        plot_summary(num_users=10, loc_ep1=local_ep, Numb_Glob_Iters = 200, lamb=lamb_value, learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)
