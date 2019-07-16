@@ -12,10 +12,10 @@ utils_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 utils_dir = os.path.join(utils_dir, 'utils')
 sys.path.append(utils_dir)
 
-from model_utils import batch_data
-from language_utils import letter_to_vec, word_to_indices
-from tf_utils import graph_size
-from tf_utils import process_sparse_grad
+from flearn.utils.model_utils import batch_data, get_random_batch_sample, suffer_data
+from flearn.utils.language_utils import letter_to_vec, word_to_indices
+from flearn.utils.tf_utils import graph_size
+from flearn.utils.tf_utils import process_sparse_grad,prox_L2
 
 def process_x(raw_x_batch):
     x_batch = [word_to_indices(word) for word in raw_x_batch]
@@ -145,22 +145,28 @@ class Model(object):
 
     def solve_inner(self, optimizer, data, num_epochs=1, batch_size=32):
         '''Solves local optimization problem'''
-
         if (batch_size == 0):  # Full data or batch_size
             # print("Full dataset")
             batch_size = len(data['y'])
 
-        # get w0
-        wzero = self.get_params()
+        if(optimizer == "fedavg"):
+            for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
+                for X, y in batch_data(data, batch_size):
+                    with self.graph.as_default():
+                        self.sess.run(self.train_op, feed_dict={
+                                      self.features: X, self.labels: y})
+        else:
+            wzero = self.get_params()
+            data_x, data_y = suffer_data(data)
+            w1 = wzero - self.optimizer._lr * np.array(self.vzero)
+            w1 = prox_L2(np.array(w1), np.array(wzero),
+                         self.optimizer._lr, self.optimizer._lamb)
+            self.set_params(w1)
 
-        # for _ in trange(num_epochs, desc='Epoch: ', leave=False, ncols=120):
-        if(optimizer == "fedsvrg" or optimizer == "fedsarah"):
-            num_epochs = np.random.randint(0, num_epochs+1)
-
-        for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
-            for X, y in batch_data(data, batch_size):
-                input_data = process_x(X)
-                target_data = process_y(y)
+            for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
+                X, y = get_random_batch_sample(data_x, data_y, batch_size)
+                X = process_x(X)
+                y = process_y(y)
                 with self.graph.as_default():
                     # get the current weight
                     if(optimizer == "fedsvrg"):
@@ -169,37 +175,41 @@ class Model(object):
                         # calculate fw0 first:
                         self.set_params(wzero)
                         fwzero = self.sess.run(self.grads, feed_dict={
-                                               self.features: input_data, self.labels: target_data})
+                                               self.features: X, self.labels: y})
                         self.optimizer.set_fwzero(fwzero, self)
 
                         # return the current weight to the model
                         self.set_params(current_weight)
                         self.sess.run(self.train_op, feed_dict={
-                                      self.features: input_data, self.labels: target_data})
+                            self.features: X, self.labels: y})
                     elif(optimizer == "fedsarah"):
                         if(_ == 0):
-                            firstGrad = self.sess.run(self.grads, feed_dict={
-                                                      self.features: input_data, self.labels: target_data})
-                            # update gradient of w_0
-                            self.optimizer.set_preG(firstGrad, self)
+                            self.set_params(wzero)
+                            grad_w0 = self.sess.run(self.grads, feed_dict={
+                                                    self.features: X, self.labels: y})  # grad w0)
+                            self.optimizer.set_preG(grad_w0, self)
+                            self.set_params(w1)
+                            preW = self.get_params()   # previous is w1
                             self.sess.run(self.train_op, feed_dict={
-
-                                          self.features: input_data, self.labels: target_data})
-                            currentGrad = self.sess.run(self.grads, feed_dict={
-                                                        self.features: input_data, self.labels: target_data})
+                                self.features: X, self.labels: y})
                         else:
-                            # update previous gradient
-                            self.optimizer.set_preG(currentGrad, self)
+                         # == w1
+                            curW = self.get_params()
+
+                            # get previous grad
+                            self.set_params(preW)
+                            grad_preW = self.sess.run(self.grads, feed_dict={
+                                                      self.features: X, self.labels: y})  # grad w0)
+                            self.optimizer.set_preG(grad_preW, self)
+                            preW = curW
+                            # return back curent grad
+                            self.set_params(curW)
                             self.sess.run(self.train_op, feed_dict={
-                                self.features: input_data, self.labels: target_data})
-
-                            currentGrad = self.sess.run(self.grads, feed_dict={
-                                self.features: input_data, self.labels: target_data})
-                    else:
+                                          self.features: X, self.labels: y})
+                    else:   # fedsgd
                         self.sess.run(self.train_op, feed_dict={
-                                      self.features: input_data, self.labels: target_data})
+                                      self.features: X, self.labels: y})
         soln = self.get_params()
-
         comp = num_epochs * \
             (len(data['y'])//batch_size) * batch_size * self.flops
         return soln, comp
