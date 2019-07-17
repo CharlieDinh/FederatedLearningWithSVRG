@@ -178,8 +178,8 @@ def plot_summary(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning
             algs_lbl[i] = algs_lbl[i] + "_prox"
         algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i])
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
-            simple_read_data(loc_ep1[i], algorithms_list[i]))[:, :Numb_Glob_Iters]
-        algs_lbl[i] = algs_lbl[i] + "_" + str(loc_ep1[i])
+            simple_read_data(loc_ep1[i], DATA_SET + algorithms_list[i]))[:, :Numb_Glob_Iters]
+        algs_lbl[i] = algs_lbl[i]
 
     plt.figure(1)
     linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']

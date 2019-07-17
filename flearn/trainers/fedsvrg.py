@@ -13,6 +13,7 @@ from flearn.utils.tf_utils import process_grad, process_sparse_grad
 class Server(BaseFedarated):
     def __init__(self, params, learner, dataset):
         print('Using Federated prox to Train')
+        self.dataset = params["dataset"]
         if(params["lamb"] >= 0):
             self.inner_opt = PROXSVRG(params['learning_rate'], params["lamb"])
         else:
@@ -113,7 +114,8 @@ class Server(BaseFedarated):
         prox = 0
         if(self.parameters['lamb'] > 0):
             prox = 1
-        self.save(prox=prox, lamb = self.parameters['lamb'], learning_rate = self.parameters["learning_rate"])
+        self.save(prox=prox, lamb=self.parameters['lamb'],
+                  learning_rate=self.parameters["learning_rate"], data_set=self.dataset)
 
         print("Test ACC:", self.rs_glob_acc)
         print("Training ACC:", self.rs_train_acc)

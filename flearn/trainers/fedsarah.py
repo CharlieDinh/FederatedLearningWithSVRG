@@ -14,6 +14,7 @@ class Server(BaseFedarated):
     def __init__(self, params, learner, dataset):
         print('Using Federated prox to Train')
         self.inner_opt = PROXSARAH(params['learning_rate'], params["lamb"])
+        self.dataset = params["dataset"]
         #self.seed = 1
         super(Server, self).__init__(params, learner, dataset)
 
@@ -110,7 +111,8 @@ class Server(BaseFedarated):
         prox = 0
         if(self.parameters['lamb'] > 0):
             prox = 1
-        self.save(prox=prox, lamb= self.parameters['lamb'], learning_rate = self.parameters["learning_rate"])
+        self.save(prox=prox, lamb=self.parameters['lamb'],
+                  learning_rate=self.parameters["learning_rate"], data_set=self.dataset)
 
         print("Test ACC:", self.rs_glob_acc)
         print("Training ACC:", self.rs_train_acc)
