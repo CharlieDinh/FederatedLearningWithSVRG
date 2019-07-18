@@ -143,6 +143,10 @@ class Model(object):
 
         return model_grads
 
+
+    def set_vzero(self, vzero):
+        self.vzero = vzero
+
     def solve_inner(self, optimizer, data, num_epochs=1, batch_size=32):
         '''Solves local optimization problem'''
         if (batch_size == 0):  # Full data or batch_size
