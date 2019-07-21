@@ -5,6 +5,7 @@ from tensorflow.python.framework import ops
 from tensorflow.python.training import optimizer
 import tensorflow as tf
 import flearn.utils.tf_utils as tf_utils
+import numpy
 
 
 class PROXSARAH(optimizer.Optimizer):
@@ -72,10 +73,30 @@ class PROXSARAH(optimizer.Optimizer):
         return control_flow_ops.group(*[var_update, v_update, ])
 
     def set_vzero(self, vzero, client):
+        for v in vzero:
+            print(type(v))
+            if not isinstance(v, numpy.ndarray):
+                print(v.dense_shape)
+                print(v.indices.shape)
+                print(v.values.shape)
+            else:
+                print(v.shape)
+
+        print('----------------')
         with client.graph.as_default():
             all_vars = tf.trainable_variables()
+            for v in all_vars:
+                print(type(v))
+                print(v.shape)
             for variable, value in zip(all_vars, vzero):
                 v = self.get_slot(variable, "vzero")
+                if not isinstance(value, numpy.ndarray):
+                    value = tf.sparse_to_dense(
+                        value.indices,
+                        value.dense_shape,
+                        value.values
+                    )
+                    value = client.sess.run(value)
                 v.load(value, client.sess)
 
     def set_preG(self, fwzero, client):
