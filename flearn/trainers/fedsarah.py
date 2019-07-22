@@ -81,7 +81,7 @@ class Server(BaseFedarated):
 
                 # solve minimization locally
                 soln, stats = c.solve_inner(self.optimizer,
-                    num_epochs=self.num_epochs, batch_size=self.batch_size)
+                                            num_epochs=self.num_epochs, batch_size=self.batch_size)
 
                 # gather solutions from client
                 csolns.append(soln)
