@@ -107,6 +107,14 @@ class Model(object):
                     with self.graph.as_default():
                         self.sess.run(self.train_op, feed_dict={
                                       self.features: X, self.labels: y})
+        if(optimizer == "fedprox"):
+            data_x, data_y = suffer_data(data)
+            for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
+                X, y = get_random_batch_sample(data_x, data_y, batch_size)
+                with self.graph.as_default():
+                    self.sess.run(self.train_op, feed_dict={
+                        self.features: X, self.labels: y})
+                        
         else:
             wzero = self.get_params()
             data_x, data_y = suffer_data(data)

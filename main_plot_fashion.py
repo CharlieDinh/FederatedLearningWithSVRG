@@ -197,14 +197,14 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     #plt.title(DATA_SET)
     #plt.savefig('train_acc.png')
     #fig, axes = plt.subplots(1, 2, sharex=True, sharey=True)
-    
+    algs_lbl = ["FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg",
+                "FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg"]
     fig = plt.figure(figsize=(10, 4))
     ax = fig.add_subplot(111)    # The big subplot
     ax1 = fig.add_subplot(121)
     ax2 = fig.add_subplot(122)
     #min = train_loss.min()
-    min = 0.14
-    markersize = 2
+    min = train_loss.min() - 0.002
 # Turn off axis lines and ticks of the big subplot
     ax.spines['top'].set_color('none')
     ax.spines['bottom'].set_color('none')
@@ -213,22 +213,20 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     ax.tick_params(labelcolor='w', top='off', bottom='off', left='off', right='off')
     
     for i in range(3):
-        ax2.plot(train_loss[i, 1:], linestyle=linestyles[i],
-                 marker=markers[i], markersize=markersize, label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
-        ax2.set_ylim([min, 0.3])
+        ax2.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
+        ax2.set_ylim([min, 0.28])
         ax2.legend()
-        ax2.set_title("FASHION MNIST: " + r'$\beta = 15,$' + r'$\tau = 20$', y=1.02)
+        ax2.set_title("FASHION MNIST: " + r'$\beta = 7,$' + r'$\tau = 20$', y=1.02)
     
     for (i) in range(3):
-        ax1.plot(train_loss[i+3, 1:], linestyle=linestyles[i+3], marker=markers[i], markersize=markersize,
-                 label=algs_lbl[i+3] + " : " + '$\mu = $' + str(lamb[i]))
-        ax1.set_ylim([min, 0.3])
+        ax1.plot(train_loss[i+3, 1:], linestyle=linestyles[i+3],label=algs_lbl[i+3] + " : " + '$\mu = $' + str(lamb[i]))
+        ax1.set_ylim([min, 0.28])
         ax1.legend()
-        ax1.set_title("FASHION MNIST: " + r'$\beta = 10,$' + r'$\tau = 10$', y=1.02)
+        ax1.set_title("FASHION MNIST: " + r'$\beta = 5,$' + r'$\tau = 10$', y=1.02)
             
     ax.set_xlabel('Number of Global Iterations')
     ax.set_ylabel('Training Loss', labelpad=15)
-    plt.savefig('train_loss.png')
+    plt.savefig('train_loss.pdf')
 
     plt.figure(2)
     fig = plt.figure(figsize=(10, 4))
@@ -244,15 +242,13 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     ax.tick_params(labelcolor='w', top='off',
                    bottom='off', left='off', right='off')
     for i in range(3):
-        ax2.plot(glob_acc[i, 1:], linestyle=linestyles[i], marker=markers[i],  markersize=markersize,
-                 label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
+        ax2.plot(glob_acc[i, 1:], linestyle=linestyles[i],label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
         ax2.set_ylim([0.8, max])
         ax2.legend()
         ax2.set_title("FASHION MNIST: " + r'$\beta = 20,$' +
                       r'$\tau = 50$', y=1.02)
     for (i) in range(3):
-        ax1.plot(glob_acc[i+3, 1:], linestyle=linestyles[i+3], marker=markers[i], markersize=markersize,
-                 label=algs_lbl[i+3] + " : " + '$\mu = $' + str(lamb[i]))
+        ax1.plot(glob_acc[i+3, 1:], linestyle=linestyles[i+3],label=algs_lbl[i+3] + " : " + '$\mu = $' + str(lamb[i]))
         ax1.set_title("FASHION MNIST: " + r'$\beta = 15,$' + r'$\tau = 20$', y=1.02)
         ax1.set_ylim([0.8, max])
         ax1.legend()
@@ -273,7 +269,7 @@ if __name__ == '__main__':
         #for i in range(len(algorithms_list)):
         #    main(num_users=10, loc_ep=local_ep[i], Numb_Glob_Iters = 400, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
-        plot_summary(num_users=10, loc_ep1=local_ep, Numb_Glob_Iters=400, lamb=lamb_value,
+        plot_summary(num_users=10, loc_ep1=local_ep, Numb_Glob_Iters=800, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)

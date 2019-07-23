@@ -17,7 +17,7 @@ OPTIMIZERS = ['fedavg', 'fedprox', 'fedsvrg', 'fedsarah', 'fedsgd']
 DATASETS = ['sent140', 'nist', 'shakespeare', 'mnist', 'synthetic_iid', 'synthetic_0_0',
             'synthetic_0.5_0.5', 'synthetic_1_1', 'fashion_mnist']  # NIST is EMNIST in the paper
 
-DATA_SET = "synthetic_0.5_0.5"
+DATA_SET = "synthetic_0_0"
 
 MODEL_PARAMS = {
     'sent140.bag_dnn': (2,),  # num_classes
@@ -204,6 +204,8 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     #min = train_loss.min()
     min = 0.14
     markersize = 2
+    algs_lbl = ["FedProxVR_Svrg", "FedProxVR_Svrg", "FedProxVR_Svrg", "FedProxVR_Svrg",
+                "FedProxVR_Sarah", "FedProxVR_Sarah", "FedProxVR_Sarah", "FedProxVR_Sarah"]
 # Turn off axis lines and ticks of the big subplot
     ax.spines['top'].set_color('none')
     ax.spines['bottom'].set_color('none')
@@ -213,21 +215,21 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     num = 4
     for i in range(num):
         ax2.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
-        ax2.set_ylim([0.49, 1.4])
+        ax2.set_ylim([0.49, 0.9])
         ax2.legend()
         #ax2.set_title("Synthetic_0_0 " + r'$\beta = 15,$' + r'$\tau = 20$', y=1.02)
     
     for (i) in range(num):
         ax1.plot(train_loss[i+num, 1:], linestyle=linestyles[i],
                  label=algs_lbl[i+num] + " : " + '$\mu = $' + str(lamb[i]))
-        ax1.set_ylim([0.49, 1.4])
+        ax1.set_ylim([0.49, 0.9])
         ax1.legend()
         #ax1.set_title("Synthetic_0_0 : " + r'$\beta = 15,$' + r'$\tau = 20$', y=1.02)
-    ax.set_title("Synthetic_0.5_0.5 : " + r'$\beta = 15,$' +
+    ax.set_title("Synthetic : " + r'$\beta = 7,$' +
                   r'$\tau = 20$', y=1.02)
     ax.set_xlabel('Number of Global Iterations')
     ax.set_ylabel('Training Loss', labelpad=15)
-    plt.savefig('train_loss.png')
+    plt.savefig('train_loss.pdf')
 
     plt.figure(2)
     fig = plt.figure(figsize=(10, 4))
@@ -248,7 +250,7 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
         #ax2.set_ylim([0.8, max])
         ax1.set_ylim([0.5, max])
         ax2.legend()
-        ax2.set_title("FASHION MNIST: " + r'$\beta = 20,$' +
+        ax2.set_title("FASHION MNIST: " + r'$\beta = 7,$' +
                       r'$\tau = 50$', y=1.02)
     for (i) in range(num):
         ax1.plot(glob_acc[i+num, 1:], linestyle=linestyles[i],
@@ -265,8 +267,8 @@ if __name__ == '__main__':
                        "fedsarah", "fedsarah", "fedsarah", "fedsarah"]
     lamb_value = [0, 1, 2, 4, 
                   0, 1, 2, 4]
-    learning_rate = [0.05, 0.05, 0.05, 0.05,
-                     0.045, 0.045, 0.045, 0.045]
+    learning_rate = [0.13, 0.13, 0.13, 0.13,
+                     0.08, 0.08, 0.08, 0.08]
     local_ep = [20, 20, 20, 20, 20, 20, 
                 20, 20, 20, 20, 20, 20]
     if(0):

@@ -13,7 +13,7 @@ class Server(BaseFedarated):
     def __init__(self, params, learner, dataset):
         print('Using Federated prox to Train')
         self.inner_opt = PerturbedGradientDescent(
-            params['learning_rate'], params['mu'])
+            params['learning_rate'], params["lamb"])
         #self.seed = 1
         super(Server, self).__init__(params, learner, dataset)
 
@@ -71,14 +71,11 @@ class Server(BaseFedarated):
             for c in selected_clients:
                 # communicate the latest model
                 c.set_params(self.latest_model)
-
                 # solve minimization locally
                 soln, stats = c.solve_inner(self.optimizer,
                     num_epochs=self.num_epochs, batch_size=self.batch_size)
-
                 # gather solutions from client
                 csolns.append(soln)
-
                 # track communication cost
                 self.metrics.update(rnd=i, cid=c.id, stats=stats)
 
@@ -101,7 +98,11 @@ class Server(BaseFedarated):
 
         # save server model
         self.metrics.write()
-        self.save(weighted=self.parameters['weight'])
+        prox = 0
+        if(self.parameters['lamb'] > 0):
+            prox = 1
+        self.save(prox=prox, lamb=self.parameters['lamb'],
+                  learning_rate=self.parameters["learning_rate"], data_set=self.dataset)
 
         print("Test ACC:", self.rs_glob_acc)
         print("Training ACC:", self.rs_train_acc)
