@@ -7,11 +7,11 @@ import os
 
 random.seed(1)
 np.random.seed(1)
-NUM_USERS = 10
+NUM_USERS = 100
 
 # Setup directory for train/test data
-train_path = './data/train/all_data_0_niid_0_keep_10_train_9.json'
-test_path = './data/test/all_data_0_niid_0_keep_10_test_9.json'
+train_path = './data/train/mnist_train.json'
+test_path = './data/test/mnist_test.json'
 dir_path = os.path.dirname(train_path)
 if not os.path.exists(dir_path):
     os.makedirs(dir_path)
@@ -39,7 +39,7 @@ idx = np.zeros(10, dtype=np.int64)
 for user in range(NUM_USERS):
     for j in range(2):  # 3 labels for each users
         # l = (2*user+j)%10
-        l = (user + j) % 10
+        l = (user + j) % 10 
         print("L:",l)
         X[user] += mnist_data[l][idx[l]:idx[l]+10].tolist()
         y[user] += (l*np.ones(10)).tolist()
@@ -51,15 +51,15 @@ print("IDX1:", idx) # counting samples for each labels
 user = 0
 props = np.random.lognormal(0, 2., (10,NUM_USERS,2)) # last 5 is 5 labels
 # print("here:",props/np.sum(props,(1,2), keepdims=True))
-props = np.array([[[len(v)-1000]] for v in mnist_data])*props/np.sum(props,(1,2), keepdims=True)
+props = np.array([[[len(v)-100]] for v in mnist_data])*props/np.sum(props,(1,2), keepdims=True)
 #idx = 1000*np.ones(10, dtype=np.int64)
 # print("here2:",props)
 for user in trange(NUM_USERS):
     for j in range(2):  # 4 labels for each users
         # l = (2*user+j)%10
         l = ( user + j) % 10
-        num_samples = int(props[l,user//int(NUM_USERS/10),j])
-        num_samples = min(num_samples,200)
+        num_samples = int(props[l,user//int(NUM_USERS/10),j]) *10
+        #num_samples = min(num_samples,200)
         # print(num_samples)
         if idx[l] + num_samples < len(mnist_data[l]):
             X[user] += mnist_data[l][idx[l]:idx[l]+num_samples].tolist()
@@ -81,7 +81,7 @@ for i in range(NUM_USERS):
     random.shuffle(combined)
     X[i][:], y[i][:] = zip(*combined)
     num_samples = len(X[i])
-    train_len = int(0.9*num_samples)
+    train_len = int(0.75*num_samples)
     test_len = num_samples - train_len
     
     train_data['users'].append(uname) 

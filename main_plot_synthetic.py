@@ -201,8 +201,8 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     ax = fig.add_subplot(111)    # The big subplot
     ax1 = fig.add_subplot(121)
     ax2 = fig.add_subplot(122)
-    #min = train_loss.min()
-    min = 0.14
+    min = train_loss.min() - 0.01
+    #min = 0.14
     markersize = 2
     algs_lbl = ["FedProxVR_Svrg", "FedProxVR_Svrg", "FedProxVR_Svrg", "FedProxVR_Svrg",
                 "FedProxVR_Sarah", "FedProxVR_Sarah", "FedProxVR_Sarah", "FedProxVR_Sarah"]
@@ -215,14 +215,14 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     num = 4
     for i in range(num):
         ax2.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
-        ax2.set_ylim([0.49, 0.9])
+        ax2.set_ylim([min, 1.2])
         ax2.legend()
         #ax2.set_title("Synthetic_0_0 " + r'$\beta = 15,$' + r'$\tau = 20$', y=1.02)
     
     for (i) in range(num):
         ax1.plot(train_loss[i+num, 1:], linestyle=linestyles[i],
                  label=algs_lbl[i+num] + " : " + '$\mu = $' + str(lamb[i]))
-        ax1.set_ylim([0.49, 0.9])
+        ax1.set_ylim([min, 1.2])
         ax1.legend()
         #ax1.set_title("Synthetic_0_0 : " + r'$\beta = 15,$' + r'$\tau = 20$', y=1.02)
     ax.set_title("Synthetic : " + r'$\beta = 7,$' +
@@ -262,21 +262,71 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     ax.set_ylabel('Test Accuracy', labelpad=15)
     plt.savefig('glob_acc.png')
 
+
+def plot_summary_2(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[]):
+
+    Numb_Algs = len(algorithms_list)
+    train_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    train_loss = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    glob_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    algs_lbl = algorithms_list.copy()
+    for i in range(Numb_Algs):
+        if(lamb[i] > 0):
+            algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
+            algs_lbl[i] = algs_lbl[i] + "_prox"
+        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i])
+        train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
+            simple_read_data(loc_ep1[i], DATA_SET + algorithms_list[i]))[:, :Numb_Glob_Iters]
+        algs_lbl[i] = algs_lbl[i]
+
+    plt.figure(1)
+    linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
+    for i in range(Numb_Algs):
+        plt.plot(train_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
+        #plt.plot(train_acc1[i, 1:], label=algs_lbl1[i])
+    plt.legend(loc='best')
+    plt.ylabel('Training Accuracy')
+    plt.xlabel('Number of Global Iterations')
+    plt.title('Number of users: ' + str(num_users) +
+              ', Lr: ' + str(learning_rate[0]))
+    plt.savefig('train_acc.png')
+
+    plt.figure(2)
+    for i in range(Numb_Algs):
+        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
+        #plt.plot(train_loss1[i, 1:], label=algs_lbl1[i])
+    plt.legend(loc='best')
+    #plt.ylim([0, 0.3])
+    plt.ylabel('Training Loss')
+    plt.xlabel('Number of Global Iterations')
+    plt.title('Number of users: ' + str(num_users) +
+              ', Lr: ' + str(learning_rate[0]))
+    #plt.ylim([train_loss.min(), 0.3])
+    plt.savefig('train_loss.png')
+
+    plt.figure(3)
+    for i in range(Numb_Algs):
+        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
+        #plt.plot(glob_acc1[i, 1:], label=algs_lbl1[i])
+    plt.legend(loc='best')
+    #plt.ylim([0.9, glob_acc.max()])
+    plt.ylabel('Test Accuracy')
+    plt.xlabel('Number of Global Iterations')
+    plt.title('Number of users: ' + str(num_users) +
+              ', Lr: ' + str(learning_rate[0]))
+    plt.savefig('glob_acc.png')
 if __name__ == '__main__':
     algorithms_list = ["fedsvrg", "fedsvrg", "fedsvrg", "fedsvrg",
                        "fedsarah", "fedsarah", "fedsarah", "fedsarah"]
-    lamb_value = [0, 1, 2, 4, 
-                  0, 1, 2, 4]
-    learning_rate = [0.13, 0.13, 0.13, 0.13,
-                     0.08, 0.08, 0.08, 0.08]
-    local_ep = [20, 20, 20, 20, 20, 20, 
-                20, 20, 20, 20, 20, 20]
+    lamb_value = [0, 1, 2, 4, 0, 1, 2, 4]
+    learning_rate = [0.3, 0.3, 0.3, 0.3, 0.12, 0.12, 0.12, 0.12]
+    local_ep = [20, 20, 20, 20, 20, 20, 20, 20]
     if(0):
         plot_summary(num_users=100, loc_ep1=50, Numb_Glob_Iters=200, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
         #for i in range(len(algorithms_list)):
-        #    main(num_users=10, loc_ep=local_ep[i], Numb_Glob_Iters = 400, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
+        #    main(num_users=100, loc_ep=local_ep[i], Numb_Glob_Iters = 300, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
         plot_summary(num_users=10, loc_ep1=local_ep, Numb_Glob_Iters=300, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
