@@ -116,7 +116,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
             'flearn', 'models', parsed['dataset'], parsed['model'])
 
     # mod = importlib.import_module(model_path)
-    import flearn.models.mnist.cnn as mclr
+    import flearn.models.mnist.mclr as mclr
     mod = mclr
     learner = getattr(mod, 'Model')
 
@@ -175,12 +175,14 @@ def plot_summary_2(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learni
         if(lamb[i] > 0):
             algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
             algs_lbl[i] = algs_lbl[i] + "_prox"
-        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i])
+        algorithms_list[i] = algorithms_list[i] + \
+            "_" + str(learning_rate[i]) + str(num_users) + "_" + "u"
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
             simple_read_data(loc_ep1[i], DATA_SET + algorithms_list[i]))[:, :Numb_Glob_Iters]
         algs_lbl[i] = algs_lbl[i]
 
     plt.figure(1)
+    MIN = train_loss.min() - 0.01
     linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
     for i in range(Numb_Algs):
         plt.plot(train_acc[i, 1:],linestyle=linestyles[i], label=algs_lbl[i])
@@ -190,6 +192,7 @@ def plot_summary_2(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learni
     plt.xlabel('Number of Global Iterations')
     plt.title('Number of users: ' + str(num_users) +
               ', Lr: ' + str(learning_rate[0]))
+    plt.ylim([MIN, 0.5])
     plt.savefig('train_acc.png')
 
     plt.figure(2)
@@ -197,11 +200,10 @@ def plot_summary_2(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learni
         plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
         #plt.plot(train_loss1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
-    #plt.ylim([0, 0.3])
+    plt.ylim([MIN, 0.5])
     plt.ylabel('Training Loss')
     plt.xlabel('Number of Global Iterations')
-    plt.title('Number of users: ' + str(num_users) +
-              ', Lr: ' + str(learning_rate[0]))
+    plt.title('Number of users: ' + str(num_users) +', Lr: ' + str(learning_rate[0]))
     #plt.ylim([train_loss.min(), 0.3])
     plt.savefig('train_loss.png')
 
@@ -300,25 +302,23 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     plt.savefig('glob_acc.pdf')
 
 if __name__ == '__main__':
-    algorithms_list = ["fedsarah", "fedsvrg","fedsgd","fedprox",
-                       "fedsarah", "fedsvrg", "fedsgd", "fedprox"]
+    algorithms_list = ["fedsvrg"]
     if(1):
-        lamb_value = [1, 1, 0,1, 1, 1, 0,1]
-        learning_rate = [0.01, 0.01, 0.01, 0.01, 0.015, 0.015, 0.015, 0.015]
-        local_ep = [50, 50, 50,50, 20,20,20,20]
-    else:
-        lamb_value = [0, 0, 0.1, 0.1, 0.1, 0]
-        learning_rate = [0.001, 0.001, 0.001, 0.001]
-        local_ep = [15, 10]
+        lamb_value = [0,0,0]
+        learning_rate = [0.01, 0.01,  0.01]
+        local_ep = [20, 20, 20]
+        number_users = 40
+        Numb_Glob_I = 300
 
     if(0):
-        plot_summary(num_users=100, loc_ep1=50, Numb_Glob_Iters=200, lamb=lamb_value,
-                     learning_rate=learning_rate, algorithms_list=algorithms_list)
+        plot_summary_2(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
+                       learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
-        #for i in range(len(algorithms_list)):
-        #    main(num_users=10, loc_ep=local_ep[i], Numb_Glob_Iters = 800, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
+        for i in range(len(algorithms_list)):
+            main(num_users=number_users, loc_ep=local_ep[i], Numb_Glob_Iters=Numb_Glob_I,
+                 lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
-        plot_summary(num_users=10, loc_ep1=local_ep, Numb_Glob_Iters=400, lamb=lamb_value,
+        plot_summary_2(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)

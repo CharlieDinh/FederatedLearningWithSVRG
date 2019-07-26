@@ -107,22 +107,24 @@ class Model(object):
                     with self.graph.as_default():
                         self.sess.run(self.train_op, feed_dict={
                                       self.features: X, self.labels: y})
-        if(optimizer == "fedprox"):
+
+        if(optimizer == "fedprox" or optimizer == "fedsgd"):
             data_x, data_y = suffer_data(data)
             for _ in range(num_epochs):  # t = 1,2,3,4,5,...m
                 X, y = get_random_batch_sample(data_x, data_y, batch_size)
                 with self.graph.as_default():
                     self.sess.run(self.train_op, feed_dict={
                         self.features: X, self.labels: y})
-                        
-        else:
-            wzero = self.get_params()
+
+        if(optimizer == "fedsarah" or optimizer == "fedsvrg"):
             data_x, data_y = suffer_data(data)
+
+            wzero = self.get_params()
             w1 = wzero - self.optimizer._lr * np.array(self.vzero)
             w1 = prox_L2(np.array(w1), np.array(wzero),self.optimizer._lr, self.optimizer._lamb)
             self.set_params(w1)
 
-            for e in range(num_epochs):  # t = 1,2,3,4,5,...m
+            for e in range(num_epochs-1):  # t = 1,2,3,4,5,...m
                 X, y = get_random_batch_sample(data_x, data_y, batch_size)
                 with self.graph.as_default():
                     # get the current weight
@@ -146,7 +148,8 @@ class Model(object):
                             self.optimizer.set_preG(grad_w0, self)
 
                             self.set_params(w1)
-                            preW = self.get_params()   # previous is w1 
+                            preW = self.get_params()   # previous is w1
+
                             self.sess.run(self.train_op, feed_dict={
                                 self.features: X, self.labels: y})
                         else: # == w1
@@ -161,8 +164,6 @@ class Model(object):
                             # return back curent grad 
                             self.set_params(curW)
                             self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
-                    else:   # fedsgd
-                        self.sess.run(self.train_op, feed_dict={self.features: X, self.labels: y})
         soln = self.get_params()
         comp = num_epochs * \
             (len(data['y'])//batch_size) * batch_size * self.flops
