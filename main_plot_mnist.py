@@ -176,7 +176,7 @@ def plot_summary_2(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learni
             algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
             algs_lbl[i] = algs_lbl[i] + "_prox"
         algorithms_list[i] = algorithms_list[i] + \
-            "_" + str(learning_rate[i]) + str(num_users) + "_" + "u"
+            "_" + str(learning_rate[i]) + "_" + str(num_users) + "u"
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
             simple_read_data(loc_ep1[i], DATA_SET + algorithms_list[i]))[:, :Numb_Glob_Iters]
         algs_lbl[i] = algs_lbl[i]
@@ -302,7 +302,7 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     plt.savefig('glob_acc.pdf')
 
 if __name__ == '__main__':
-    algorithms_list = ["fedsvrg"]
+    algorithms_list = ["fedsvrg","fedsgd","fedsarah"]
     if(1):
         lamb_value = [0,0,0]
         learning_rate = [0.01, 0.01,  0.01]
