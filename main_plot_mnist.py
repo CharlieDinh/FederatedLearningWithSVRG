@@ -182,7 +182,7 @@ def plot_summary_2(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learni
         algs_lbl[i] = algs_lbl[i]
 
     plt.figure(1)
-    MIN = train_loss.min() - 0.01
+    MIN = train_loss.min() - 0.001
     linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
     for i in range(Numb_Algs):
         plt.plot(train_acc[i, 1:],linestyle=linestyles[i], label=algs_lbl[i])
@@ -192,7 +192,7 @@ def plot_summary_2(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learni
     plt.xlabel('Number of Global Iterations')
     plt.title('Number of users: ' + str(num_users) +
               ', Lr: ' + str(learning_rate[0]))
-    plt.ylim([MIN, 0.5])
+    plt.ylim([MIN, 0.32])
     plt.savefig('train_acc.png')
 
     plt.figure(2)
@@ -200,7 +200,7 @@ def plot_summary_2(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learni
         plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
         #plt.plot(train_loss1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='best')
-    plt.ylim([MIN, 0.5])
+    plt.ylim([MIN, 0.32])
     plt.ylabel('Training Loss')
     plt.xlabel('Number of Global Iterations')
     plt.title('Number of users: ' + str(num_users) +', Lr: ' + str(learning_rate[0]))
@@ -232,23 +232,22 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
         if(lamb[i] > 0):
             algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
             algs_lbl[i] = algs_lbl[i] + "_prox"
-        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i])
+        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i]) + "_" + str(num_users) + "u"
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
             simple_read_data(loc_ep1[i], DATA_SET + algorithms_list[i]))[:, :Numb_Glob_Iters]
         algs_lbl[i] = algs_lbl[i]
 
     plt.figure(1)
     linestyles = ['-', '--', '-.', '-', '--', '-.']
-    markers = ['+','*', 's', 'd', 'o' ]
-    algs_lbl = ["FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg", "FedProx",
-                "FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg", "FedProx"]
+    algs_lbl = ["FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg",
+                "FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg"]
     fig = plt.figure(figsize=(10, 4))
     ax = fig.add_subplot(111)    # The big subplot
     ax1 = fig.add_subplot(121)
     ax2 = fig.add_subplot(122)
     #min = train_loss.min()
-    min = train_loss.min()- 0.002
-    num_al = len(algs_lbl)//2
+    min = train_loss.min() - 0.001
+    num_al = 3
 # Turn off axis lines and ticks of the big subplot
     ax.spines['top'].set_color('none')
     ax.spines['bottom'].set_color('none')
@@ -257,15 +256,14 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     ax.tick_params(labelcolor='w', top='off', bottom='off', left='off', right='off')
     
     for i in range(num_al):
-        ax2.plot(train_loss[i, 1:], linestyle=linestyles[i],label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
-        ax2.set_ylim([min, 0.275])
+        ax2.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
+        ax2.set_ylim([min, 0.35])
         ax2.legend()
         ax2.set_title("MNIST: " + r'$\beta = 10,$' + r'$\tau = 50$', y=1.02)
     
     for i in range(num_al):
-        ax1.plot(train_loss[i+num_al, 1:], linestyle=linestyles[i],
-                 label=algs_lbl[i+num_al] + " : " + '$\mu = $' + str(lamb[i]))
-        ax1.set_ylim([min, 0.275])
+        ax1.plot(train_loss[i+num_al, 1:], linestyle=linestyles[i], label=algs_lbl[i + num_al] + " : " + '$\mu = $' + str(lamb[i]))
+        ax1.set_ylim([min, 0.35])
         ax1.legend()
         ax1.set_title("MNIST: " + r'$\beta = 7,$' + r'$\tau = 20$', y=1.02)
             
@@ -292,8 +290,9 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
         ax2.set_ylim([0.8, max])
         ax2.legend()
         ax2.set_title("MNIST: " + r'$\beta = 10,$' + r'$\tau = 50$', y=1.02)
+
     for (i) in range(3):
-        ax1.plot(glob_acc[i+3, 1:], linestyle=linestyles[i+3],label=algs_lbl[i+3] + " : " + '$\mu = $' + str(lamb[i]))
+        ax1.plot(glob_acc[i+3, 1:], linestyle=linestyles[i+3],label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
         ax1.set_title("MNIST: " + r'$\beta = 7,$' + r'$\tau = 20$', y=1.02)
         ax1.set_ylim([0.8, max])
         ax1.legend()
@@ -302,23 +301,24 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     plt.savefig('glob_acc.pdf')
 
 if __name__ == '__main__':
-    algorithms_list = ["fedsvrg","fedsgd","fedsarah"]
+    algorithms_list = ["fedsarah","fedsvrg","fedsgd",
+                       "fedsarah","fedsvrg","fedsgd"]
     if(1):
-        lamb_value = [0,0,0]
-        learning_rate = [0.01, 0.01,  0.01]
-        local_ep = [20, 20, 20]
-        number_users = 40
-        Numb_Glob_I = 300
+        lamb_value = [0.1,0.1,0,
+                      0.1,0.1,0]
+        learning_rate = [0.015,  0.015, 0.015, 0.01,  0.01, 0.01]
+        local_ep = [20, 20, 20,10, 10, 10]
+        number_users = 100
+        Numb_Glob_I = 400
 
     if(0):
         plot_summary_2(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
                        learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
-        for i in range(len(algorithms_list)):
-            main(num_users=number_users, loc_ep=local_ep[i], Numb_Glob_Iters=Numb_Glob_I,
-                 lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
+        #for i in range(len(algorithms_list)):
+    #    main(num_users=number_users, loc_ep=local_ep[i], Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
-        plot_summary_2(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
+        plot_summary(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)
