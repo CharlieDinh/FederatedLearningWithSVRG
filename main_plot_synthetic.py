@@ -224,7 +224,7 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
         ax1.set_ylim([min, 1.2])
         ax1.legend()
         #ax1.set_title("Synthetic_0_0 : " + r'$\beta = 15,$' + r'$\tau = 20$', y=1.02)
-    ax.set_title("Synthetic: 100 users " + r'$\beta = 7,$' +
+    ax.set_title("Synthetic: 100 users, " + r'$\beta = 7,$' +
                   r'$\tau = 20$', y=1.02)
     ax.set_xlabel('Number of Global Iterations')
     ax.set_ylabel('Training Loss', labelpad=15)
