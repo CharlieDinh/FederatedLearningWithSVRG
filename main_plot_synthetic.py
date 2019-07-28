@@ -178,7 +178,7 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
         if(lamb[i] > 0):
             algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
             algs_lbl[i] = algs_lbl[i] + "_prox"
-        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i])
+        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i]) + "_" + str(num_users) + "u"
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
             simple_read_data(loc_ep1[i], DATA_SET + algorithms_list[i]))[:, :Numb_Glob_Iters]
         algs_lbl[i] = algs_lbl[i]
@@ -203,7 +203,6 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     ax2 = fig.add_subplot(122)
     min = train_loss.min() - 0.01
     #min = 0.14
-    markersize = 2
     algs_lbl = ["FedProxVR_Svrg", "FedProxVR_Svrg", "FedProxVR_Svrg", "FedProxVR_Svrg",
                 "FedProxVR_Sarah", "FedProxVR_Sarah", "FedProxVR_Sarah", "FedProxVR_Sarah"]
 # Turn off axis lines and ticks of the big subplot
@@ -225,7 +224,7 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
         ax1.set_ylim([min, 1.2])
         ax1.legend()
         #ax1.set_title("Synthetic_0_0 : " + r'$\beta = 15,$' + r'$\tau = 20$', y=1.02)
-    ax.set_title("Synthetic : " + r'$\beta = 7,$' +
+    ax.set_title("Synthetic: 100 users " + r'$\beta = 7,$' +
                   r'$\tau = 20$', y=1.02)
     ax.set_xlabel('Number of Global Iterations')
     ax.set_ylabel('Training Loss', labelpad=15)
@@ -326,9 +325,9 @@ if __name__ == '__main__':
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
         #for i in range(len(algorithms_list)):
-        #    main(num_users=100, loc_ep=local_ep[i], Numb_Glob_Iters = 300, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
+        #    main(num_users=100, loc_ep=local_ep[i], Numb_Glob_Iters = 400, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
-        plot_summary(num_users=10, loc_ep1=local_ep, Numb_Glob_Iters=300, lamb=lamb_value,
+        plot_summary(num_users=100, loc_ep1=local_ep, Numb_Glob_Iters=400, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)
