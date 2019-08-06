@@ -6,9 +6,8 @@ import json
 import os
 from tensorflow.examples.tutorials.mnist import input_data
 
-random.seed(1)
-np.random.seed(1)
-NUM_USERS = 10
+np.random.seed(0)
+NUM_USERS = 100
 NUM_LABELS = 2
 
 # Setup directory for train/test data
@@ -26,11 +25,18 @@ fashion_data = input_data.read_data_sets(
     'data/fashion', source_url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/')
 print("hello")
 #fashion_full = list(zip(fashion_data.train, fashion_data.test))
+print(type(fashion_data))
+mnist_data_image = []
+mnist_data_lable = []
+mnist_data_image.extend(fashion_data.train.images)
+mnist_data_image.extend(fashion_data.test.images)
+mnist_data_lable.extend(fashion_data.train.labels)
+mnist_data_lable.extend(fashion_data.test.labels)
 
-mu = np.mean(fashion_data.train.images.astype(np.float32), 0)
-sigma = np.std(fashion_data.train.images.astype(np.float32), 0)
-nom_Fashion_data = (fashion_data.train.images.astype(np.float32) - mu)/(sigma+0.001)
-nom_Fashion_lable = fashion_data.train.labels
+mu = np.mean(mnist_data_image)
+sigma = np.std(mnist_data_image)
+nom_Fashion_data = (mnist_data_image - mu)/(sigma+0.001)
+nom_Fashion_lable = np.array(mnist_data_lable)
 mnist_data = []
 for i in trange(10):
     idx = nom_Fashion_lable == i
