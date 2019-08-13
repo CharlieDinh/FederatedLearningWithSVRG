@@ -178,14 +178,13 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
         if(lamb[i] > 0):
             algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
             algs_lbl[i] = algs_lbl[i] + "_prox"
-        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i])
+        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i]) + "_" + str(num_users) + "u"
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
             simple_read_data(loc_ep1[i], DATA_SET + algorithms_list[i]))[:, :Numb_Glob_Iters]
         algs_lbl[i] = algs_lbl[i]
 
     plt.figure(1)
-    linestyles = ['-', '--', '-.', '-', '--', '-.']
-    markers = ['+','*', 's', 'd', 'o' ]
+    linestyles = ['-', '--', '-.', ':', '--', '-.']
     #color = ['b', 'r', 'g', 'y']
     #plt.subplot(121)
     #for i in range(Numb_Algs):
@@ -197,8 +196,8 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     #plt.title(DATA_SET)
     #plt.savefig('train_acc.png')
     #fig, axes = plt.subplots(1, 2, sharex=True, sharey=True)
-    algs_lbl = ["FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg",
-                "FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg"]
+    algs_lbl = ["FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg", "FedProx",
+    "FedProxVR_Sarah", "FedProxVR_Svrg", "FedAvg", "FedProx"]
     fig = plt.figure(figsize=(10, 4))
     ax = fig.add_subplot(111)    # The big subplot
     ax1 = fig.add_subplot(121)
@@ -212,14 +211,14 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     ax.spines['right'].set_color('none')
     ax.tick_params(labelcolor='w', top='off', bottom='off', left='off', right='off')
     
-    for i in range(3):
+    for i in range(4):
         ax2.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
         ax2.set_ylim([min, 0.28])
         ax2.legend()
         ax2.set_title("FASHION MNIST: " + r'$\beta = 7,$' + r'$\tau = 20$', y=1.02)
     
-    for (i) in range(3):
-        ax1.plot(train_loss[i+3, 1:], linestyle=linestyles[i+3],label=algs_lbl[i+3] + " : " + '$\mu = $' + str(lamb[i]))
+    for (i) in range(4):
+        ax1.plot(train_loss[i+4, 1:], linestyle=linestyles[i],label=algs_lbl[i+4] + " : " + '$\mu = $' + str(lamb[i]))
         ax1.set_ylim([min, 0.28])
         ax1.legend()
         ax1.set_title("FASHION MNIST: " + r'$\beta = 5,$' + r'$\tau = 10$', y=1.02)
@@ -257,11 +256,11 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     plt.savefig('glob_acc.png')
 
 if __name__ == '__main__':
-    algorithms_list = ["fedsvrg", "fedsarah", "fedsgd",
-                       "fedsvrg", "fedsarah", "fedsgd"]
-    lamb_value = [0.1, 0.1, 0, 0.1, 0.1, 0]
-    learning_rate = [0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
-    local_ep = [20, 20, 20, 10, 10, 10]
+    algorithms_list = ["fedsvrg", "fedsarah", "fedsgd","fedprox",
+                       "fedsvrg", "fedsarah", "fedsgd","fedprox"]
+    lamb_value = [0.1, 0.1, 0, 0.1, 0.1, 0.1, 0 ,0.1]
+    learning_rate = [0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
+    local_ep = [20, 20, 20,20, 10, 10, 10,10]
     if(0):
         plot_summary(num_users=100, loc_ep1=50, Numb_Glob_Iters=200, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
