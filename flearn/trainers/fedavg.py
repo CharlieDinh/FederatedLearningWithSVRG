@@ -92,7 +92,11 @@ class Server(BaseFedarated):
         # save server model
         self.metrics.write()
         #self.save()
-        self.save(learning_rate=self.parameters["learning_rate"])
+        prox = 0
+        if(self.parameters['lamb'] > 0):
+            prox = 1
+        self.save(prox=prox, lamb=self.parameters['lamb'],
+                  learning_rate=self.parameters["learning_rate"], data_set=self.dataset, num_users=self.clients_per_round,batch = self.batch_size)
 
         print("Test ACC:", self.rs_glob_acc)
         print("Training ACC:", self.rs_train_acc)

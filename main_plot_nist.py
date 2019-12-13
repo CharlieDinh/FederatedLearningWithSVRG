@@ -69,7 +69,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
     parser.add_argument('--batch_size',
                         help='batch size when clients train on data;',
                         type=int,
-                        default=1
+                        default=10
                         )  # 0 is full dataset
     parser.add_argument('--num_epochs',
                         help='number of epochs when clients train on data;',
@@ -116,7 +116,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
             'flearn', 'models', parsed['dataset'], parsed['model'])
 
     # mod = importlib.import_module(model_path)
-    import flearn.models.mnist.mclr as mclr
+    import flearn.models.mnist.cnn as mclr
     mod = mclr
     learner = getattr(mod, 'Model')
 
@@ -305,25 +305,23 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     plt.savefig('glob_acc.pdf')
 
 if __name__ == '__main__':
-    algorithms_list = ["fedsarah", "fedsvrg", "fedsgd","fedprox", 
-                        "fedsarah", "fedsvrg", "fedsgd", "fedprox"
-                        ]
+    algorithms_list = [ "fedsarah"]
     if(1):
-        lamb_value = [0.1, 0.1, 0, 0.1, 0.1, 0.1, 0, 0.1]
+        lamb_value = [0]
         #learning_rate = [0.01, 0.01, 0.01, 0.01,0.015,  0.015, 0.015, 0.015]
-        learning_rate = [0.01,  0.01, 0.01, 0.01,0.01, 0.01, 0.01, 0.01]
-        local_ep = [40, 40, 40, 40,20,20,20,20]
+        learning_rate = [0.015,  0.015, 0.015, 0.015,0.01, 0.01, 0.01, 0.01]
+        local_ep = [10,10,10,10,20,20,20,20]
         number_users = 10
-        Numb_Glob_I = 800
+        Numb_Glob_I = 4
 
     if(0):
         plot_summary_2(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
                        learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
-        #for i in range(len(algorithms_list)):
-        #    main(num_users=number_users, loc_ep=local_ep[i], Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
+        for i in range(len(algorithms_list)):
+            main(num_users=number_users, loc_ep=local_ep[i], Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
 
-        plot_summary(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
+        plot_summary_2(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)

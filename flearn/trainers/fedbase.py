@@ -94,13 +94,13 @@ class BaseFedarated(object):
         groups = [c.group for c in self.clients]
         return ids, groups, num_samples, tot_correct
 
-    def save(self, prox=False, lamb=0, learning_rate=0, data_set="", num_users=0):
+    def save(self, prox=False, lamb=0, learning_rate=0, data_set="", num_users=0, batch=0):
         alg = data_set + self.parameters['optimizer']
 
         if (prox == True):
             alg = alg + "_prox_" + str(lamb)
-        alg = alg + "_" + str(learning_rate) + "_" +str(num_users)+ "u"
-        with h5py.File('{}_{}.h5'.format(alg, self.parameters['num_epochs']), 'w') as hf:
+        alg = alg + "_" + str(learning_rate) + "_" + str(num_users) + "u" + "_" + str(self.batch_size) + "b"
+        with h5py.File("./results/"+'{}_{}.h5'.format(alg, self.parameters['num_epochs']), 'w') as hf:
             hf.create_dataset('rs_glob_acc', data=self.rs_glob_acc)
             hf.create_dataset('rs_train_acc', data=self.rs_train_acc)
             hf.create_dataset('rs_train_loss', data=self.rs_train_loss)
@@ -124,7 +124,6 @@ class BaseFedarated(object):
 
         num_clients = min(num_clients, len(self.clients))
         np.random.seed(round)
-
         return np.random.choice(self.clients, num_clients, replace=False) #, p=pk)
 
 

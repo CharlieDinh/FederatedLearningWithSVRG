@@ -69,7 +69,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
     parser.add_argument('--batch_size',
                         help='batch size when clients train on data;',
                         type=int,
-                        default=1
+                        default=20
                         )  # 0 is full dataset
     parser.add_argument('--num_epochs',
                         help='number of epochs when clients train on data;',
@@ -116,8 +116,8 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
             'flearn', 'models', parsed['dataset'], parsed['model'])
 
     # mod = importlib.import_module(model_path)
-    import flearn.models.synthetic.mclr as mclr
-    mod = mclr
+    import flearn.models.fashion_mnist.cnn as cnn
+    mod = cnn
     learner = getattr(mod, 'Model')
 
     # load selected trainer
@@ -164,6 +164,35 @@ def simple_read_data(loc_ep, alg):
     rs_train_acc = np.array(hf.get('rs_train_acc')[:])
     rs_train_loss = np.array(hf.get('rs_train_loss')[:])
     return rs_train_acc, rs_train_loss, rs_glob_acc
+def plot_summary1(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[]):
+    
+    #+'$\mu$'
+
+    Numb_Algs = len(algorithms_list)
+    train_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    train_loss = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    glob_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    algs_lbl = algorithms_list.copy()
+    for i in range(Numb_Algs):
+        if(lamb[i] > 0):
+            algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
+            algs_lbl[i] = algs_lbl[i] + "_prox"
+        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i]) + "_" + str(num_users) + "u"
+        train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
+            simple_read_data(loc_ep1[i], DATA_SET + algorithms_list[i]))[:, :Numb_Glob_Iters]
+        algs_lbl[i] = algs_lbl[i]
+
+    plt.figure(1)
+    linestyles = ['-', '--', '-.', ':', '--', '-.']
+    fig = plt.figure(figsize=(10, 4))
+
+    #min = train_loss.min()
+    min = train_loss.min() - 0.002
+
+    i = 0
+    plt.plot(train_loss[i, 1:], linestyle=linestyles[i],label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
+    plt.savefig('train_loss.png')
+
 
 def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[]):
     
@@ -256,19 +285,17 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     plt.savefig('glob_acc.png')
 
 if __name__ == '__main__':
-    algorithms_list = ["fedsvrg", "fedsarah", "fedsgd","fedprox",
-                       "fedsvrg", "fedsarah", "fedsgd","fedprox"]
-    lamb_value = [0.1, 0.1, 0, 0.1, 0.1, 0.1, 0 ,0.1]
-    learning_rate = [0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
-    local_ep = [20, 20, 20,20, 10, 10, 10,10]
+    algorithms_list = ["fedsarah"]
+    lamb_value = [0, 0.1, 0, 0.1, 0.1, 0.1, 0 ,0.1]
+    learning_rate = [0.001, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005]
+    local_ep = [10, 20, 20,20, 10, 10, 10,10]
     if(0):
         plot_summary(num_users=100, loc_ep1=50, Numb_Glob_Iters=200, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
     else:
         #for i in range(len(algorithms_list)):
         #    main(num_users=10, loc_ep=local_ep[i], Numb_Glob_Iters = 400, lamb=lamb_value[i], learning_rate=learning_rate[i], alg=algorithms_list[i])
-
-        plot_summary(num_users=10, loc_ep1=local_ep, Numb_Glob_Iters=800, lamb=lamb_value,
+        plot_summary1(num_users=10, loc_ep1=local_ep, Numb_Glob_Iters=400, lamb=lamb_value,
                      learning_rate=learning_rate, algorithms_list=algorithms_list)
 
         print("-- FINISH -- :",)
