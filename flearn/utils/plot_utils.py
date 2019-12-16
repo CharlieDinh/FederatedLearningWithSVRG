@@ -31,39 +31,39 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
     MIN = train_loss.min() - 0.001
     linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
     for i in range(Numb_Algs):
-        plt.plot(train_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
+        plt.plot(train_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + str(lamb[i])+ "_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
     plt.legend(loc='lower right')
     plt.ylabel('Training Accuracy')
     plt.xlabel('Global rounds ' + '$K_g$')
-    plt.title(dataset.upper() + ": Local rounds: " + str(loc_ep1[i]))
+    plt.title(dataset.upper())
     #plt.ylim([0.8, glob_acc.max()])
     plt.savefig(dataset.upper() + str(loc_ep1[1]) + 'train_acc.png')
     #plt.savefig(dataset + str(loc_ep1[1]) + 'train_acc.pdf')
 
     plt.figure(2)
     for i in range(Numb_Algs):
-        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
+        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + str(lamb[i])+
+                 "_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
         #plt.plot(train_loss1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='upper right')
-    #plt.ylim([MIN, 1])
+    plt.ylim([MIN, MIN+ 0.3])
     plt.ylabel('Training Loss')
     plt.xlabel('Global rounds')
-    plt.title(dataset.upper() +
-              ": Local rounds: " + str(loc_ep1[i]))
+    plt.title(dataset.upper())
     #plt.ylim([train_loss.min(), 1])
     plt.savefig(dataset.upper() + str(loc_ep1[1]) + 'train_loss.png')
     #plt.savefig(dataset + str(loc_ep1[1]) + 'train_loss.pdf')
 
     plt.figure(3)
     for i in range(Numb_Algs):
-        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i])
+        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i],
+                 label=algs_lbl[i]+str(lamb[i])+"_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
         #plt.plot(glob_acc1[i, 1:], label=algs_lbl1[i])
     plt.legend(loc='lower right')
     #plt.ylim([0.6, glob_acc.max()])
     plt.ylabel('Test Accuracy')
     plt.xlabel('Global rounds ')
-    plt.title(dataset.upper()+
-              ": Local rounds: " + str(loc_ep1[i]))
+    plt.title(dataset.upper())
     plt.savefig(dataset.upper() + str(loc_ep1[1]) + 'glob_acc.png')
     #plt.savefig(dataset + str(loc_ep1[1]) + 'glob_acc.pdf')
 
