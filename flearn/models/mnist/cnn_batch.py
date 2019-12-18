@@ -129,9 +129,9 @@ class Model(object):
             w1 = prox_L2(np.array(w1), np.array(wzero),
                          self.optimizer._lr, self.optimizer._lamb)
             self.set_params(w1)
-
+            index = 0
             for e in range(num_epochs-1):  # t = 1,2,3,4,5,...m
-                for X, y, index in batch_data2(data, batch_size):
+                for X, y, _ in batch_data2(data, batch_size):
                     with self.graph.as_default():
                         # get the current weight
                         if(optimizer == "fedsvrg"):
