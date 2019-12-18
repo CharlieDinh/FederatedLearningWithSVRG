@@ -47,7 +47,8 @@ class Model(object):
         pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
         dropout1 = tf.layers.dropout(
             pool1,
-            rate=0.4,
+            rate=0.25,
+            #rate = 0.4,
         )
         conv2 = tf.layers.conv2d(
             inputs=dropout1,
@@ -58,7 +59,8 @@ class Model(object):
         pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
         dropout2 = tf.layers.dropout(
             pool2,
-            rate=0.4,
+            rate=0.25,
+            #rate = 0.4,
         )
         pool2_flat = tf.reshape(dropout2, [-1, 7 * 7 * 64])
         dense = tf.layers.dense(inputs=pool2_flat, units=512, activation=tf.nn.relu)
