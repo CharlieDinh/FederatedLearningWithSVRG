@@ -7,8 +7,8 @@ import os
 from tensorflow.examples.tutorials.mnist import input_data
 
 np.random.seed(0)
-NUM_USERS = 10
-NUM_LABELS = 3
+NUM_USERS = 100
+NUM_LABELS = 2
 
 # Setup directory for train/test data
 train_path = './data/train/fashion_train.json'
