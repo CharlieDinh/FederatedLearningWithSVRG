@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import h5py
 import numpy as np
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
 
 def simple_read_data(loc_ep, alg):
     hf = h5py.File("./results/"+'{}_{}.h5'.format(alg, loc_ep), 'r')
@@ -8,6 +9,48 @@ def simple_read_data(loc_ep, alg):
     rs_train_acc = np.array(hf.get('rs_train_acc')[:])
     rs_train_loss = np.array(hf.get('rs_train_loss')[:])
     return rs_train_acc, rs_train_loss, rs_glob_acc
+
+def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_label="", y_label="",
+                         legend_loc="lower right",
+                         axins_loc=None, axins_axis_visible=True, axins_zoom_factor=25, 
+                         axins_x_y_lims=[0, 0, 0, 0], axins_aspect=1500, 
+                         inset_loc1=1, inset_loc2=2, output_path=None):
+
+    # Create a new figure with a default 111 subplot    
+    fig, ax = plt.subplots()
+    
+    # Plot the entire data 
+    for i in range(len(data)):
+        ax.plot(data[i], linestyle=linestyles[i], label=labels[i])
+    plt.legend(loc=legend_loc)
+    plt.ylabel(y_label)
+    plt.xlabel(x_label)
+    plt.title(title.upper())
+
+    # Decide to plot the inset plot or not
+    if axins_loc is None:
+        return
+
+    # Create a zoomed portion of the original plot 
+    axins = zoomed_inset_axes(ax, axins_zoom_factor, loc=axins_loc)
+    for i in range(len(data)):
+        axins.plot(data[i], linestyle=linestyles[i], label=labels[i])
+    # specify the limits (four bounding box corners of the inset plot)
+    x1, x2, y1, y2 = axins_x_y_lims
+    axins.set_xlim(x1, x2)
+    axins.set_ylim(y1, y2)
+    axins.set_aspect(axins_aspect)
+    plt.yticks(visible=axins_axis_visible)
+    plt.xticks(visible=axins_axis_visible)
+    
+    # Choose which corners of the inset plot the inset markers are attachted to
+    mark_inset(ax, axins, loc1=inset_loc1, loc2=inset_loc2, fc="none", ec="0.6")
+
+    # Save the figure
+    if output_path is not None:
+        plt.savefig(output_path)
+    return
+    
 
 def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset = ""):
     
@@ -27,46 +70,49 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
             simple_read_data(loc_ep1[i], dataset + algorithms_list[i]))[:, :Numb_Glob_Iters]
         algs_lbl[i] = algs_lbl[i]
     
-    plt.figure(1)
-    MIN = train_loss.min() - 0.001
-    start = 200
     linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
+
+
+    plt.figure(1)
+    data, lstyles, labels = [], [], []
     for i in range(Numb_Algs):
-        plt.plot(train_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + str(lamb[i])+ "_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
-    plt.legend(loc='lower right')
-    plt.ylabel('Training Accuracy')
-    plt.xlabel('Global rounds ' + '$K_g$')
-    plt.title(dataset.upper())
-    #plt.ylim([0.8, glob_acc.max()])
-    plt.savefig(dataset.upper() + str(loc_ep1[1]) + 'train_acc.png')
-    #plt.savefig(dataset + str(loc_ep1[1]) + 'train_acc.pdf')
+        data.append(train_acc[i, ::])
+        lstyles.append(linestyles[i])
+        labels.append(algs_lbl[i]+str(lamb[i])+"_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
+
+    plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels, 
+                         x_label="Global rounds", y_label="Training accuracy", axins_loc=7,
+                         axins_axis_visible=True, axins_zoom_factor=14, axins_x_y_lims=[1400, 1499, 0.85, 0.854],
+                         axins_aspect=2000, inset_loc1=1, inset_loc2=2, 
+                         output_path=dataset.upper() + str(loc_ep1[1]) + 'train_acc.png')
+
 
     plt.figure(2)
+    data, lstyles, labels = [], [], []
     for i in range(Numb_Algs):
-        plt.plot(train_loss[i, start:], linestyle=linestyles[i], label=algs_lbl[i] + str(lamb[i])+
-                 "_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
-        #plt.plot(train_loss1[i, 1:], label=algs_lbl1[i])
-    plt.legend(loc='upper right')
-    plt.ylim([MIN, MIN+ 0.3])
-    plt.ylabel('Training Loss')
-    plt.xlabel('Global rounds')
-    plt.title(dataset.upper())
-    #plt.ylim([train_loss.min(), 1])
-    plt.savefig(dataset.upper() + str(loc_ep1[1]) + 'train_loss.png')
-    #plt.savefig(dataset + str(loc_ep1[1]) + 'train_loss.pdf')
+        data.append(train_loss[i, ::])
+        lstyles.append(linestyles[i])
+        labels.append(algs_lbl[i]+str(lamb[i])+"_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
+
+    plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels, 
+                         x_label="Global rounds", y_label="Training loss", axins_loc=10, legend_loc="upper right",
+                         axins_axis_visible=True, axins_zoom_factor=35, axins_x_y_lims=[1400, 1499, 0.425, 0.435],
+                         axins_aspect=1500, inset_loc1=3, inset_loc2=4, 
+                         output_path=dataset.upper() + str(loc_ep1[1]) + 'train_loss.png')
+
 
     plt.figure(3)
+    data, lstyles, labels = [], [], []
     for i in range(Numb_Algs):
-        plt.plot(glob_acc[i, start:], linestyle=linestyles[i],
-                 label=algs_lbl[i]+str(lamb[i])+"_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
-        #plt.plot(glob_acc1[i, 1:], label=algs_lbl1[i])
-    plt.legend(loc='lower right')
-    #plt.ylim([0.6, glob_acc.max()])
-    plt.ylabel('Test Accuracy')
-    plt.xlabel('Global rounds ')
-    plt.title(dataset.upper())
-    plt.savefig(dataset.upper() + str(loc_ep1[1]) + 'glob_acc.png')
-    #plt.savefig(dataset + str(loc_ep1[1]) + 'glob_acc.pdf')
+        data.append(glob_acc[i, ::])
+        lstyles.append(linestyles[i])
+        labels.append(algs_lbl[i]+str(lamb[i])+"_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
+
+    plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels, 
+                         x_label="Global rounds", y_label="Test accuracy", axins_loc=7,
+                         axins_axis_visible=True, axins_zoom_factor=13, axins_x_y_lims=[1400, 1499, 0.842, 0.847],
+                         axins_aspect=1500, inset_loc1=1, inset_loc2=2, 
+                         output_path=dataset.upper() + str(loc_ep1[1]) + 'glob_acc.png')
 
 def plot_summary_two_figures(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size = 0, dataset = ""):
     Numb_Algs = len(algorithms_list)
