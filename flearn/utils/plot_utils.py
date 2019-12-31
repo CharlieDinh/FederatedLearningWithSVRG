@@ -11,45 +11,60 @@ def simple_read_data(loc_ep, alg):
     return rs_train_acc, rs_train_loss, rs_glob_acc
 
 def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_label="", y_label="",
-                         legend_loc="lower right",
+                         legend_loc="lower right", plot_from=0, plot_to=0,
                          axins_loc=None, axins_axis_visible=True, axins_zoom_factor=25, 
-                         axins_x_y_lims=[0, 0, 0, 0], axins_aspect=1500, 
+                         axins_x_y_lims=[0, 0, -1, -1], axins_aspect=1500, 
                          inset_loc1=1, inset_loc2=2, output_path=None):
+    
+    """
+    If inset plot is not to be drawn, set axins_loc to None.
+    If the highest and lowest thresholds in the inset plot are to be automatically determined,
+    set y1, y2 to -1, -1.
+    """
 
     # Create a new figure with a default 111 subplot    
     fig, ax = plt.subplots()
     
     # Plot the entire data 
     for i in range(len(data)):
-        ax.plot(data[i], linestyle=linestyles[i], label=labels[i])
+        ax.plot(range(plot_from, plot_to), data[i][plot_from:plot_to], 
+                linestyle=linestyles[i], label=labels[i])
     plt.legend(loc=legend_loc)
     plt.ylabel(y_label)
     plt.xlabel(x_label)
     plt.title(title.upper())
 
     # Decide to plot the inset plot or not
-    if axins_loc is None:
-        return
+    if axins_loc is not None:
 
-    # Create a zoomed portion of the original plot 
-    axins = zoomed_inset_axes(ax, axins_zoom_factor, loc=axins_loc)
-    for i in range(len(data)):
-        axins.plot(data[i], linestyle=linestyles[i], label=labels[i])
-    # specify the limits (four bounding box corners of the inset plot)
-    x1, x2, y1, y2 = axins_x_y_lims
-    axins.set_xlim(x1, x2)
-    axins.set_ylim(y1, y2)
-    axins.set_aspect(axins_aspect)
-    plt.yticks(visible=axins_axis_visible)
-    plt.xticks(visible=axins_axis_visible)
-    
-    # Choose which corners of the inset plot the inset markers are attachted to
-    mark_inset(ax, axins, loc1=inset_loc1, loc2=inset_loc2, fc="none", ec="0.6")
+        # Create a zoomed portion of the original plot 
+        axins = zoomed_inset_axes(ax, axins_zoom_factor, loc=axins_loc)
+        for i in range(len(data)):
+            axins.plot(range(plot_from, plot_to), data[i][plot_from:plot_to], 
+                       linestyle=linestyles[i], label=labels[i])
+        # specify the limits (four bounding box corners of the inset plot)
+        x1, x2, y1, y2 = axins_x_y_lims
+
+        # Automatically set the highest and lowest thresholds in the inset plot
+        if (y1 == -1):
+            for dataset in data:
+                y1 = y1 if y1 < min(dataset[x1:x2]) else min(dataset[x1:x2])
+                y2 = y2 if y2 > max(dataset[x1:x2]) else max(dataset[x1:x2])
+            y1 -= 0.0005
+            y2 += 0.0005
+
+        axins.set_xlim(x1, x2)
+        axins.set_ylim(y1, y2)
+        axins.set_aspect(axins_aspect)
+        plt.yticks(visible=axins_axis_visible)
+        plt.xticks(visible=axins_axis_visible)
+        
+        # Choose which corners of the inset plot the inset markers are attachted to
+        mark_inset(ax, axins, loc1=inset_loc1, loc2=inset_loc2, fc="none", ec="0.6")
 
     # Save the figure
     if output_path is not None:
         plt.savefig(output_path)
-    return
     
 
 def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset = ""):
