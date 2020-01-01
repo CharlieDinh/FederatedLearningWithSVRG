@@ -40,7 +40,7 @@ def get_data_label_style(input_data = [], linestyles= [], algs_lbl = [], lamb = 
 
     return data, lstyles, labels
 def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_label="", y_label="",
-                         legend_loc="lower right",
+                         legend_loc="lower right", plot_from=0, plot_to=-1,
                          axins_loc=None, axins_axis_visible=True, axins_zoom_factor=25,
                          axins_x_y_lims=[0, 0, -1, -1], axins_aspect=1500,
                          inset_loc1=1, inset_loc2=2, output_path=None):
@@ -50,12 +50,14 @@ def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_lab
     set y1, y2 to -1, -1.
     """
 
+    plot_to = plot_to if plot_to != -1 else len(data[0])
+
     # Create a new figure with a default 111 subplot
     fig, ax = plt.subplots()
 
     # Plot the entire data
     for i in range(len(data)):
-        ax.plot(data[i][:],
+        ax.plot(range(plot_from, plot_to), data[i][plot_from:plot_to],
                 linestyle=linestyles[i], label=labels[i])
     plt.legend(loc=legend_loc)
     plt.ylabel(y_label)
@@ -68,7 +70,7 @@ def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_lab
         # Create a zoomed portion of the original plot
         axins = zoomed_inset_axes(ax, axins_zoom_factor, loc=axins_loc)
         for i in range(len(data)):
-            axins.plot(data[i][:],
+            axins.plot(range(plot_from, plot_to), data[i][plot_from:plot_to],
                        linestyle=linestyles[i], label=labels[i])
         # specify the limits (four bounding box corners of the inset plot)
         x1, x2, y1, y2 = axins_x_y_lims
@@ -92,6 +94,61 @@ def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_lab
     if output_path is not None:
         plt.savefig(output_path)
 
+def plot_data_with_inset_two_figures(plt, title="", data=[], linestyles=[], labels=[], x_label="", y_label="",
+                         legend_loc="lower right", plot_from=0, plot_to=-1,
+                         axins_loc=None, axins_axis_visible=True, axins_zoom_factor=25,
+                         axins_x_y_lims=[0, 0, -1, -1], axins_aspect=1500,
+                         inset_loc1=1, inset_loc2=2, output_path=None):
+    """
+    If inset plot is not to be drawn, set axins_loc to None.
+    If the highest and lowest thresholds in the inset plot are to be automatically determined,
+    set y1, y2 to -1, -1.
+    """
+
+    plot_to = plot_to if plot_to != -1 else len(data[0])
+
+    # Create a new figure with a default 111 subplot
+    # fig, ax = plt.subplots()
+    ax = plt
+
+    # Plot the entire data
+    for i in range(len(data)):
+        ax.plot(range(plot_from, plot_to), data[i][plot_from:plot_to],
+                linestyle=linestyles[i], label=labels[i])
+    plt.legend(loc=legend_loc)
+    plt.set_ylabel(y_label)
+    plt.set_xlabel(x_label)
+    plt.set_title(title.upper())
+
+    # Decide to plot the inset plot or not
+    if axins_loc is not None:
+
+        # Create a zoomed portion of the original plot
+        axins = zoomed_inset_axes(ax, axins_zoom_factor, loc=axins_loc)
+        for i in range(len(data)):
+            axins.plot(range(plot_from, plot_to), data[i][plot_from:plot_to],
+                       linestyle=linestyles[i], label=labels[i])
+        # specify the limits (four bounding box corners of the inset plot)
+        x1, x2, y1, y2 = axins_x_y_lims
+
+        # Automatically set the highest and lowest thresholds in the inset plot
+        if (y1 == -1):
+            y1 = min([min(dataset[x1:x2]) for dataset in data]) - 0.0005
+            y2 = max([max(dataset[x1:x2]) for dataset in data]) + 0.0005
+
+        axins.set_xlim(x1, x2)
+        axins.set_ylim(y1, y2)
+        axins.set_aspect(axins_aspect)
+        # plt.set_yticks(visible=axins_axis_visible)
+        # plt.set_xticks(visible=axins_axis_visible)
+
+        # Choose which corners of the inset plot the inset markers are attachted to
+        mark_inset(ax, axins, loc1=inset_loc1,
+                   loc2=inset_loc2, fc="none", ec="0.6")
+
+    # Save the figure
+    if output_path is not None:
+        plt.savefig(output_path)
 
 def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset=""):
     
@@ -122,7 +179,7 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
     data, lstyles, labels = get_data_label_style(input_data=train_acc, linestyles=linestyles, algs_lbl=algs_lbl, lamb=lamb, loc_ep1=loc_ep1, batch_size=batch_size)
     plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
                          x_label="Global rounds", y_label="Training accuracy", axins_loc=10,
-                         axins_axis_visible=True, axins_zoom_factor=110, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_train_acc), max(range_train_acc)],
+                         axins_axis_visible=True, axins_zoom_factor=110, axins_x_y_lims=[start_zoom_index, num_global_update, -1, max(range_train_acc)],
                          axins_aspect=15000, inset_loc1=1, inset_loc2=2,
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'train_acc.png')
 
@@ -133,9 +190,10 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
     # If plotting 800 global rounds: set axins_zoom_factor = 200,  axins_aspect = 8000
     # If plotting 1500 global rounds: set axins_zoom_factor = 375,  axins_aspect = 15000
     plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
-                         x_label="Global rounds", y_label="Training loss", axins_loc=10, legend_loc="upper right",
-                         axins_axis_visible=True, axins_zoom_factor=200, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_train_loss), max(range_train_loss)],
-                         axins_aspect=8000, inset_loc1=3, inset_loc2=4,
+                         x_label="Global rounds", y_label="Training loss", axins_loc=7, legend_loc="upper right",
+                         axins_axis_visible=True, axins_zoom_factor=375, axins_x_y_lims=[start_zoom_index, num_global_update, -1, max(range_train_loss)],
+                         plot_from=0,
+                         axins_aspect=15000, inset_loc1=3, inset_loc2=4,
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'train_loss.png')
 
     plt.figure(3)
@@ -146,10 +204,60 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
     # If plotting 1500 global rounds: set axins_zoom_factor = 90,  axins_aspect = 12000
     plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
                          x_label="Global rounds", y_label="Test accuracy", axins_loc=10,
-                         axins_axis_visible=True, axins_zoom_factor=90, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_glob_acc), max(range_glob_acc)],
+                         axins_axis_visible=True, axins_zoom_factor=90, axins_x_y_lims=[start_zoom_index, num_global_update, -1, max(range_glob_acc)],
                          axins_aspect=12000, inset_loc1=1, inset_loc2=2,
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'glob_acc.png')
 
+def plot_two_figures_with_insets(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[],
+                                 batch_size=[], dataset=""):
+    Numb_Algs = len(algorithms_list)
+
+    # get training data from file
+    glob_acc, train_acc, train_loss = get_training_data_value(num_users,loc_ep1, Numb_Glob_Iters, lamb, learning_rate, algorithms_list, batch_size, dataset)
+    linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
+    algs_lbl = algorithms_list.copy()
+
+    ### setup value for mini-figure
+    num_global_update = len(train_loss[0]) - 1
+    range_plot = 100
+    start_zoom_index = num_global_update - range_plot
+
+    # get min max in range
+    range_train_acc, range_train_loss, range_glob_acc = [], [], []
+    for i in range(Numb_Algs):
+        range_train_acc.append(train_acc[i][start_zoom_index:].min())
+        range_train_acc.append(train_acc[i][start_zoom_index:].max())
+        range_train_loss.append(train_loss[i][start_zoom_index:].min())
+        range_train_loss.append(train_loss[i][start_zoom_index:].max())
+        range_glob_acc.append(glob_acc[i][start_zoom_index:].min())
+        range_glob_acc.append(glob_acc[i][start_zoom_index:].max())
+
+    data, lstyles, labels = get_data_label_style(input_data=train_loss, linestyles=linestyles, algs_lbl=algs_lbl, lamb=lamb, loc_ep1=loc_ep1, batch_size=batch_size)
+    
+    data1 = data[:len(data) // 2]
+    data2 = data[len(data) //2 :]
+    labels1 = labels[:len(labels) // 2]
+    labels2 = labels[len(labels) // 2:]
+
+    fig, (ax1, ax2) = plt.subplots(1, 2,figsize=(10,4.5))
+    plot_data_with_inset_two_figures(ax1, title=dataset.upper(), data=data1, linestyles=lstyles, labels=labels1,
+                         x_label="Global rounds", y_label="Training loss", axins_loc=10, legend_loc="upper right",
+                         axins_axis_visible=True, axins_zoom_factor=200, axins_x_y_lims=[start_zoom_index, num_global_update, -1, max(range_train_loss)],
+                         plot_from=0,
+                         axins_aspect=12500, inset_loc1=3, inset_loc2=4,
+                         output_path=None)
+
+    plot_data_with_inset_two_figures(ax2, title=dataset.upper(), data=data2, linestyles=lstyles, labels=labels2,
+                         x_label="Global rounds", y_label="Training loss", axins_loc=10, legend_loc="upper right",
+                         axins_axis_visible=True, axins_zoom_factor=60, axins_x_y_lims=[start_zoom_index, num_global_update, -1, max(range_train_loss)],
+                         plot_from=0,
+                         axins_aspect=4000, inset_loc1=3, inset_loc2=4,
+                         output_path=None)
+
+    # TODO: Change the output filename
+    plt.savefig("comparison.png")
+
+    pass
 
 def plot_summary_two_figures(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset=""):
     Numb_Algs = len(algorithms_list)
