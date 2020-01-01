@@ -3,6 +3,7 @@ import h5py
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
 
+
 def simple_read_data(loc_ep, alg):
     hf = h5py.File("./results/"+'{}_{}.h5'.format(alg, loc_ep), 'r')
     rs_glob_acc = np.array(hf.get('rs_glob_acc')[:])
@@ -10,24 +11,24 @@ def simple_read_data(loc_ep, alg):
     rs_train_loss = np.array(hf.get('rs_train_loss')[:])
     return rs_train_acc, rs_train_loss, rs_glob_acc
 
+
 def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_label="", y_label="",
                          legend_loc="lower right", plot_from=0, plot_to=0,
-                         axins_loc=None, axins_axis_visible=True, axins_zoom_factor=25, 
-                         axins_x_y_lims=[0, 0, -1, -1], axins_aspect=1500, 
+                         axins_loc=None, axins_axis_visible=True, axins_zoom_factor=25,
+                         axins_x_y_lims=[0, 0, -1, -1], axins_aspect=1500,
                          inset_loc1=1, inset_loc2=2, output_path=None):
-    
     """
     If inset plot is not to be drawn, set axins_loc to None.
     If the highest and lowest thresholds in the inset plot are to be automatically determined,
     set y1, y2 to -1, -1.
     """
 
-    # Create a new figure with a default 111 subplot    
+    # Create a new figure with a default 111 subplot
     fig, ax = plt.subplots()
-    
-    # Plot the entire data 
+
+    # Plot the entire data
     for i in range(len(data)):
-        ax.plot(range(plot_from, plot_to), data[i][plot_from:plot_to], 
+        ax.plot(range(plot_from, plot_to), data[i][plot_from:plot_to],
                 linestyle=linestyles[i], label=labels[i])
     plt.legend(loc=legend_loc)
     plt.ylabel(y_label)
@@ -37,10 +38,10 @@ def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_lab
     # Decide to plot the inset plot or not
     if axins_loc is not None:
 
-        # Create a zoomed portion of the original plot 
+        # Create a zoomed portion of the original plot
         axins = zoomed_inset_axes(ax, axins_zoom_factor, loc=axins_loc)
         for i in range(len(data)):
-            axins.plot(range(plot_from, plot_to), data[i][plot_from:plot_to], 
+            axins.plot(range(plot_from, plot_to), data[i][plot_from:plot_to],
                        linestyle=linestyles[i], label=labels[i])
         # specify the limits (four bounding box corners of the inset plot)
         x1, x2, y1, y2 = axins_x_y_lims
@@ -58,17 +59,17 @@ def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_lab
         axins.set_aspect(axins_aspect)
         plt.yticks(visible=axins_axis_visible)
         plt.xticks(visible=axins_axis_visible)
-        
+
         # Choose which corners of the inset plot the inset markers are attachted to
-        mark_inset(ax, axins, loc1=inset_loc1, loc2=inset_loc2, fc="none", ec="0.6")
+        mark_inset(ax, axins, loc1=inset_loc1,
+                   loc2=inset_loc2, fc="none", ec="0.6")
 
     # Save the figure
     if output_path is not None:
         plt.savefig(output_path)
-    
 
-def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset = ""):
-    
+
+def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset=""):
     Numb_Algs = len(algorithms_list)
     train_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
     train_loss = np.zeros((Numb_Algs, Numb_Glob_Iters))
@@ -84,52 +85,71 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
             simple_read_data(loc_ep1[i], dataset + algorithms_list[i]))[:, :Numb_Glob_Iters]
         algs_lbl[i] = algs_lbl[i]
-    
-    linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
 
+    linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
 
     plt.figure(1)
     data, lstyles, labels = [], [], []
+
+    num_global_update = len(train_loss[0]) - 1
+    range_plot = 100
+    start_zoom_index = num_global_update - range_plot
+
+    range_train_acc, range_train_loss, range_glob_acc = [], [], []
+    for i in range(Numb_Algs):
+        range_train_acc.append(train_acc[i][start_zoom_index:].min())
+        range_train_acc.append(train_acc[i][start_zoom_index:].max())
+        range_train_loss.append(train_loss[i][start_zoom_index:].min())
+        range_train_loss.append(train_loss[i][start_zoom_index:].max())
+        range_glob_acc.append(glob_acc[i][start_zoom_index:].min())
+        range_glob_acc.append(glob_acc[i][start_zoom_index:].max())
+
     for i in range(Numb_Algs):
         data.append(train_acc[i, ::])
         lstyles.append(linestyles[i])
-        labels.append(algs_lbl[i]+str(lamb[i])+"_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
+        labels.append(algs_lbl[i]+str(lamb[i])+"_" +
+                      str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
 
-    plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels, 
+    '''
+    Training Accurancy
+    '''
+
+    plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
                          x_label="Global rounds", y_label="Training accuracy", axins_loc=7,
-                         axins_axis_visible=True, axins_zoom_factor=14, axins_x_y_lims=[1400, 1499, 0.85, 0.854],
-                         axins_aspect=2000, inset_loc1=1, inset_loc2=2, 
+                         axins_axis_visible=True, axins_zoom_factor=14, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_train_acc), max(range_train_acc)],
+                         axins_aspect=2000, inset_loc1=1, inset_loc2=2,
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'train_acc.png')
-
 
     plt.figure(2)
     data, lstyles, labels = [], [], []
     for i in range(Numb_Algs):
         data.append(train_loss[i, ::])
         lstyles.append(linestyles[i])
-        labels.append(algs_lbl[i]+str(lamb[i])+"_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
+        labels.append(algs_lbl[i]+str(lamb[i])+"_" +
+                      str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
 
-    plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels, 
+    plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
                          x_label="Global rounds", y_label="Training loss", axins_loc=10, legend_loc="upper right",
-                         axins_axis_visible=True, axins_zoom_factor=35, axins_x_y_lims=[1400, 1499, 0.425, 0.435],
-                         axins_aspect=1500, inset_loc1=3, inset_loc2=4, 
+                         axins_axis_visible=True, axins_zoom_factor=35, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_train_loss), max(range_train_loss)],
+                         axins_aspect=1500, inset_loc1=3, inset_loc2=4,
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'train_loss.png')
-
 
     plt.figure(3)
     data, lstyles, labels = [], [], []
     for i in range(Numb_Algs):
         data.append(glob_acc[i, ::])
         lstyles.append(linestyles[i])
-        labels.append(algs_lbl[i]+str(lamb[i])+"_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
+        labels.append(algs_lbl[i]+str(lamb[i])+"_" +
+                      str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
 
-    plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels, 
+    plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
                          x_label="Global rounds", y_label="Test accuracy", axins_loc=7,
-                         axins_axis_visible=True, axins_zoom_factor=13, axins_x_y_lims=[1400, 1499, 0.842, 0.847],
-                         axins_aspect=1500, inset_loc1=1, inset_loc2=2, 
+                         axins_axis_visible=True, axins_zoom_factor=13, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_glob_acc), max(range_glob_acc)],
+                         axins_aspect=1500, inset_loc1=1, inset_loc2=2,
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'glob_acc.png')
 
-def plot_summary_two_figures(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size = 0, dataset = ""):
+
+def plot_summary_two_figures(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset=""):
     Numb_Algs = len(algorithms_list)
     train_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
     train_loss = np.zeros((Numb_Algs, Numb_Glob_Iters))
@@ -139,7 +159,8 @@ def plot_summary_two_figures(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb
         if(lamb[i] > 0):
             algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
             algs_lbl[i] = algs_lbl[i] + "_prox"
-        algorithms_list[i] = algorithms_list[i] + "_" + str(learning_rate[i]) + "_" + str(num_users) + "u" + "_" + str(batch_size[i]) + "b"
+        algorithms_list[i] = algorithms_list[i] + "_" + str(
+            learning_rate[i]) + "_" + str(num_users) + "u" + "_" + str(batch_size[i]) + "b"
         train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
             simple_read_data(loc_ep1[i], dataset + algorithms_list[i]))[:, :Numb_Glob_Iters]
         algs_lbl[i] = algs_lbl[i]
@@ -154,7 +175,7 @@ def plot_summary_two_figures(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb
     ax2 = fig.add_subplot(122)
     #min = train_loss.min()
     min = train_loss.min() - 0.01
-    max = 3.5#train_loss.max() + 0.01
+    max = 3.5  # train_loss.max() + 0.01
     num_al = 2
 # Turn off axis lines and ticks of the big subplot
     ax.spines['top'].set_color('none')
@@ -195,7 +216,7 @@ def plot_summary_two_figures(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb
     ax.spines['right'].set_color('none')
     ax.tick_params(labelcolor='w', top='off',
                    bottom='off', left='off', right='off')
-    
+
     for i in range(num_al):
         ax1.plot(glob_acc[i, 1:], linestyle=linestyles[i],
                  label=algs_lbl[i] + " : " + '$K_l = $' + str(loc_ep1[i]))
@@ -260,14 +281,13 @@ def plot_summary_three_figures(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, la
         ax1.set_ylim([min, max])
         ax1.legend(loc='upper right')
 
-
     for i in range(num_al):
         stringbatch = str(batch_size[i])
         ax2.plot(train_loss[i+num_al, 1:], linestyle=linestyles[i],
                  label=algs_lbl[i + num_al] + " : " + '$K_l = $' + str(loc_ep1[i+num_al]) + ', $B = $' + stringbatch)
         ax2.set_ylim([min, max])
         ax2.legend(loc='upper right')
-    
+
     for i in range(num_al):
         stringbatch = str(batch_size[i])
         ax3.plot(train_loss[i+num_al*2, 1:], linestyle=linestyles[i],
@@ -278,8 +298,10 @@ def plot_summary_three_figures(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, la
     ax.set_title('FENIST', y=1.02)
     ax.set_xlabel('Global rounds ' + '$K_g$')
     ax.set_ylabel('Training Loss')
-    plt.savefig(dataset + str(loc_ep1[1]) + 'train_loss.pdf', bbox_inches='tight')
-    plt.savefig(dataset + str(loc_ep1[1]) + 'train_loss.png', bbox_inches='tight')
+    plt.savefig(dataset + str(loc_ep1[1]) +
+                'train_loss.pdf', bbox_inches='tight')
+    plt.savefig(dataset + str(loc_ep1[1]) +
+                'train_loss.png', bbox_inches='tight')
 
     fig = plt.figure(figsize=(12, 4))
     ax = fig.add_subplot(111)    # The big subplot
@@ -347,10 +369,6 @@ def plot_summary_three_figures_batch(num_users=100, loc_ep1=[], Numb_Glob_Iters=
                 "FEDL",  "FedAvg",
                 "FEDL",  "FedAvg"]
 
-    print("training loss")
-    for i in range(6):
-        print(train_loss[i].min())
-    
     print("global accurancy")
     for i in range(6):
         print(glob_acc[i].max())
@@ -404,14 +422,14 @@ def plot_summary_three_figures_batch(num_users=100, loc_ep1=[], Numb_Glob_Iters=
                 'train_loss.pdf', bbox_inches='tight')
     plt.savefig(dataset + str(loc_ep1[1]) +
                 'train_loss.png', bbox_inches='tight')
-    
+
     fig = plt.figure(figsize=(12, 4))
     ax = fig.add_subplot(111)    # The big subplot
     ax1 = fig.add_subplot(131)
     ax2 = fig.add_subplot(132)
     ax3 = fig.add_subplot(133)
     min = 0.8
-    max = glob_acc.max() + 0.01 # train_loss.max() + 0.01
+    max = glob_acc.max() + 0.01  # train_loss.max() + 0.01
     num_al = 2
 # Turn off axis lines and ticks of the big subplot
     ax.spines['top'].set_color('none')
@@ -456,8 +474,8 @@ def plot_summary_three_figures_batch(num_users=100, loc_ep1=[], Numb_Glob_Iters=
                 'testing_accuracy.png', bbox_inches='tight')
 
 
-def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[],batch_size=0, dataset=""):
-    
+def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset=""):
+
     #+'$\mu$'\
     Numb_Algs = len(algorithms_list)
     train_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
@@ -492,20 +510,23 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     ax.spines['bottom'].set_color('none')
     ax.spines['left'].set_color('none')
     ax.spines['right'].set_color('none')
-    ax.tick_params(labelcolor='w', top='off', bottom='off', left='off', right='off')
-    
+    ax.tick_params(labelcolor='w', top='off',
+                   bottom='off', left='off', right='off')
+
     for i in range(num_al):
-        ax2.plot(train_loss[i, interation_start:], linestyle=linestyles[i], label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
+        ax2.plot(train_loss[i, interation_start:], linestyle=linestyles[i],
+                 label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
         ax2.set_ylim([min, max])
         ax2.legend()
         ax2.set_title("MNIST: " + r'$\beta = 7,$' + r'$\tau = 20$', y=1.02)
-    
+
     for i in range(num_al):
-        ax1.plot(train_loss[i+num_al, interation_start:], linestyle=linestyles[i], label=algs_lbl[i + num_al] + " : " + '$\mu = $' + str(lamb[i]))
+        ax1.plot(train_loss[i+num_al, interation_start:], linestyle=linestyles[i],
+                 label=algs_lbl[i + num_al] + " : " + '$\mu = $' + str(lamb[i]))
         ax1.set_ylim([min, max])
         ax1.legend()
         ax1.set_title("MNIST: " + r'$\beta = 5,$' + r'$\tau = 10$', y=1.02)
-            
+
     ax.set_xlabel('Number of Global Iterations')
     ax.set_ylabel('Training Loss', labelpad=15)
     plt.savefig('train_loss.pdf')
@@ -524,15 +545,17 @@ def plot_summary(num_users=100, loc_ep1=[], Numb_Glob_Iters=10, lamb=[], learnin
     ax.spines['right'].set_color('none')
     ax.tick_params(labelcolor='w', top='off',
                    bottom='off', left='off', right='off')
-    
+
     for i in range(3):
-        ax2.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
+        ax2.plot(glob_acc[i, 1:], linestyle=linestyles[i],
+                 label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
         ax2.set_ylim([0.8, max])
         ax2.legend()
         ax2.set_title("MNIST: " + r'$\beta = 7,$' + r'$\tau = 20$', y=1.02)
 
     for (i) in range(3):
-        ax1.plot(glob_acc[i+3, 1:], linestyle=linestyles[i+3],label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
+        ax1.plot(glob_acc[i+3, 1:], linestyle=linestyles[i+3],
+                 label=algs_lbl[i] + " : " + '$\mu = $' + str(lamb[i]))
         ax1.set_title("MNIST: " + r'$\beta = 5,$' + r'$\tau = 10$', y=1.02)
         ax1.set_ylim([0.8, max])
         ax1.legend()
