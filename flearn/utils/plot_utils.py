@@ -13,7 +13,7 @@ def simple_read_data(loc_ep, alg):
 
 
 def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_label="", y_label="",
-                         legend_loc="lower right", plot_from=0, plot_to=0,
+                         legend_loc="lower right",
                          axins_loc=None, axins_axis_visible=True, axins_zoom_factor=25,
                          axins_x_y_lims=[0, 0, -1, -1], axins_aspect=1500,
                          inset_loc1=1, inset_loc2=2, output_path=None):
@@ -28,7 +28,7 @@ def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_lab
 
     # Plot the entire data
     for i in range(len(data)):
-        ax.plot(range(plot_from, plot_to), data[i][plot_from:plot_to],
+        ax.plot(data[i][:],
                 linestyle=linestyles[i], label=labels[i])
     plt.legend(loc=legend_loc)
     plt.ylabel(y_label)
@@ -41,18 +41,15 @@ def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_lab
         # Create a zoomed portion of the original plot
         axins = zoomed_inset_axes(ax, axins_zoom_factor, loc=axins_loc)
         for i in range(len(data)):
-            axins.plot(range(plot_from, plot_to), data[i][plot_from:plot_to],
+            axins.plot(data[i][:],
                        linestyle=linestyles[i], label=labels[i])
         # specify the limits (four bounding box corners of the inset plot)
         x1, x2, y1, y2 = axins_x_y_lims
 
         # Automatically set the highest and lowest thresholds in the inset plot
         if (y1 == -1):
-            for dataset in data:
-                y1 = y1 if y1 < min(dataset[x1:x2]) else min(dataset[x1:x2])
-                y2 = y2 if y2 > max(dataset[x1:x2]) else max(dataset[x1:x2])
-            y1 -= 0.0005
-            y2 += 0.0005
+            y1 = min([min(dataset[x1:x2]) for dataset in data]) - 0.0005
+            y2 = max([max(dataset[x1:x2]) for dataset in data]) + 0.0005
 
         axins.set_xlim(x1, x2)
         axins.set_ylim(y1, y2)
@@ -115,9 +112,9 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
     '''
 
     plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
-                         x_label="Global rounds", y_label="Training accuracy", axins_loc=7,
-                         axins_axis_visible=True, axins_zoom_factor=14, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_train_acc), max(range_train_acc)],
-                         axins_aspect=2000, inset_loc1=1, inset_loc2=2,
+                         x_label="Global rounds", y_label="Training accuracy", axins_loc=10,
+                         axins_axis_visible=True, axins_zoom_factor=110, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_train_acc), max(range_train_acc)],
+                         axins_aspect=15000, inset_loc1=1, inset_loc2=2,
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'train_acc.png')
 
     plt.figure(2)
@@ -128,10 +125,13 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
         labels.append(algs_lbl[i]+str(lamb[i])+"_" +
                       str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
 
+    # Note:
+    # If plotting 800 global rounds: set axins_zoom_factor = 200,  axins_aspect = 8000
+    # If plotting 1500 global rounds: set axins_zoom_factor = 375,  axins_aspect = 15000
     plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
                          x_label="Global rounds", y_label="Training loss", axins_loc=10, legend_loc="upper right",
-                         axins_axis_visible=True, axins_zoom_factor=35, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_train_loss), max(range_train_loss)],
-                         axins_aspect=1500, inset_loc1=3, inset_loc2=4,
+                         axins_axis_visible=True, axins_zoom_factor=200, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_train_loss), max(range_train_loss)],
+                         axins_aspect=8000, inset_loc1=3, inset_loc2=4,
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'train_loss.png')
 
     plt.figure(3)
@@ -142,10 +142,14 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
         labels.append(algs_lbl[i]+str(lamb[i])+"_" +
                       str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
 
+
+    # Note:
+    # If plotting 800 global rounds: set axins_zoom_factor = 250,  axins_aspect = 8000
+    # If plotting 1500 global rounds: set axins_zoom_factor = 90,  axins_aspect = 12000
     plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
-                         x_label="Global rounds", y_label="Test accuracy", axins_loc=7,
-                         axins_axis_visible=True, axins_zoom_factor=13, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_glob_acc), max(range_glob_acc)],
-                         axins_aspect=1500, inset_loc1=1, inset_loc2=2,
+                         x_label="Global rounds", y_label="Test accuracy", axins_loc=10,
+                         axins_axis_visible=True, axins_zoom_factor=90, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_glob_acc), max(range_glob_acc)],
+                         axins_aspect=12000, inset_loc1=1, inset_loc2=2,
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'glob_acc.png')
 
 
