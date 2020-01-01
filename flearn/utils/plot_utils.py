@@ -11,7 +11,34 @@ def simple_read_data(loc_ep, alg):
     rs_train_loss = np.array(hf.get('rs_train_loss')[:])
     return rs_train_acc, rs_train_loss, rs_glob_acc
 
+def get_training_data_value(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset=""):
+    Numb_Algs = len(algorithms_list)
+    train_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    train_loss = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    glob_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
+    algs_lbl = algorithms_list.copy()
+    for i in range(Numb_Algs):
+        if(lamb[i] > 0):
+            algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
+            algs_lbl[i] = algs_lbl[i] + "_prox"
+        algorithms_list[i] = algorithms_list[i] + \
+            "_" + str(learning_rate[i]) + "_" + str(num_users) + \
+            "u" + "_" + str(batch_size[i]) + "b"
+        train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
+            simple_read_data(loc_ep1[i], dataset + algorithms_list[i]))[:, :Numb_Glob_Iters]
+        algs_lbl[i] = algs_lbl[i]
+    return glob_acc, train_acc, train_loss
 
+
+def get_data_label_style(input_data = [], linestyles= [], algs_lbl = [], lamb = [], loc_ep1 = 0, batch_size =0):
+    data, lstyles, labels = [], [], []
+    for i in range(len(algs_lbl)):
+        data.append(input_data[i, ::])
+        lstyles.append(linestyles[i])
+        labels.append(algs_lbl[i]+str(lamb[i])+"_" +
+                      str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
+
+    return data, lstyles, labels
 def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_label="", y_label="",
                          legend_loc="lower right",
                          axins_loc=None, axins_axis_visible=True, axins_zoom_factor=25,
@@ -67,31 +94,21 @@ def plot_data_with_inset(plt, title="", data=[], linestyles=[], labels=[], x_lab
 
 
 def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], algorithms_list=[], batch_size=0, dataset=""):
+    
+    
     Numb_Algs = len(algorithms_list)
-    train_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
-    train_loss = np.zeros((Numb_Algs, Numb_Glob_Iters))
-    glob_acc = np.zeros((Numb_Algs, Numb_Glob_Iters))
-    algs_lbl = algorithms_list.copy()
-    for i in range(Numb_Algs):
-        if(lamb[i] > 0):
-            algorithms_list[i] = algorithms_list[i] + "_prox_" + str(lamb[i])
-            algs_lbl[i] = algs_lbl[i] + "_prox"
-        algorithms_list[i] = algorithms_list[i] + \
-            "_" + str(learning_rate[i]) + "_" + str(num_users) + \
-            "u" + "_" + str(batch_size[i]) + "b"
-        train_acc[i, :], train_loss[i, :], glob_acc[i, :] = np.array(
-            simple_read_data(loc_ep1[i], dataset + algorithms_list[i]))[:, :Numb_Glob_Iters]
-        algs_lbl[i] = algs_lbl[i]
 
+    # get training data from file
+    glob_acc, train_acc, train_loss = get_training_data_value(num_users,loc_ep1, Numb_Glob_Iters, lamb, learning_rate, algorithms_list, batch_size, dataset)
     linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
+    algs_lbl = algorithms_list.copy()
 
-    plt.figure(1)
-    data, lstyles, labels = [], [], []
-
+    ### setup value for mini-figure
     num_global_update = len(train_loss[0]) - 1
     range_plot = 100
     start_zoom_index = num_global_update - range_plot
 
+    # get min max in range
     range_train_acc, range_train_loss, range_glob_acc = [], [], []
     for i in range(Numb_Algs):
         range_train_acc.append(train_acc[i][start_zoom_index:].min())
@@ -101,16 +118,8 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
         range_glob_acc.append(glob_acc[i][start_zoom_index:].min())
         range_glob_acc.append(glob_acc[i][start_zoom_index:].max())
 
-    for i in range(Numb_Algs):
-        data.append(train_acc[i, ::])
-        lstyles.append(linestyles[i])
-        labels.append(algs_lbl[i]+str(lamb[i])+"_" +
-                      str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
-
-    '''
-    Training Accurancy
-    '''
-
+    plt.figure(1)
+    data, lstyles, labels = get_data_label_style(input_data=train_acc, linestyles=linestyles, algs_lbl=algs_lbl, lamb=lamb, loc_ep1=loc_ep1, batch_size=batch_size)
     plot_data_with_inset(plt, title=dataset.upper(), data=data, linestyles=lstyles, labels=labels,
                          x_label="Global rounds", y_label="Training accuracy", axins_loc=10,
                          axins_axis_visible=True, axins_zoom_factor=110, axins_x_y_lims=[start_zoom_index, num_global_update, min(range_train_acc), max(range_train_acc)],
@@ -118,12 +127,7 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'train_acc.png')
 
     plt.figure(2)
-    data, lstyles, labels = [], [], []
-    for i in range(Numb_Algs):
-        data.append(train_loss[i, ::])
-        lstyles.append(linestyles[i])
-        labels.append(algs_lbl[i]+str(lamb[i])+"_" +
-                      str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
+    data, lstyles, labels = get_data_label_style(input_data=train_loss, linestyles=linestyles, algs_lbl=algs_lbl, lamb=lamb, loc_ep1=loc_ep1, batch_size=batch_size)
 
     # Note:
     # If plotting 800 global rounds: set axins_zoom_factor = 200,  axins_aspect = 8000
@@ -135,13 +139,7 @@ def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[
                          output_path=dataset.upper() + str(loc_ep1[1]) + 'train_loss.png')
 
     plt.figure(3)
-    data, lstyles, labels = [], [], []
-    for i in range(Numb_Algs):
-        data.append(glob_acc[i, ::])
-        lstyles.append(linestyles[i])
-        labels.append(algs_lbl[i]+str(lamb[i])+"_" +
-                      str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")
-
+    data, lstyles, labels = get_data_label_style(input_data=glob_acc, linestyles=linestyles, algs_lbl=algs_lbl, lamb=lamb, loc_ep1=loc_ep1, batch_size=batch_size)
 
     # Note:
     # If plotting 800 global rounds: set axins_zoom_factor = 250,  axins_aspect = 8000
