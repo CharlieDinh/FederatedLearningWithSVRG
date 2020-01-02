@@ -5,12 +5,12 @@ import os
 def suffer_data(data):
     data_x = data['x']
     data_y = data['y']
-        # randomly shuffle data
-    np.random.seed(100)
-    rng_state = np.random.get_state()
-    np.random.shuffle(data_x)
-    np.random.set_state(rng_state)
-    np.random.shuffle(data_y)
+    #randomly shuffle data
+    #np.random.seed(100)
+    #rng_state = np.random.get_state()
+    #np.random.shuffle(data_x)
+    #np.random.set_state(rng_state)
+    #np.random.shuffle(data_y)
     return (data_x, data_y)
 def batch_data(data, batch_size):
     '''
@@ -56,13 +56,25 @@ def batch_data2(data, batch_size):
         yield (batched_x, batched_y, i)
 
 
-def get_random_batch_sample(data_x, data_y, batch_size):
+def get_random_batch_sample_origin(data_x, data_y, batch_size):
     if(len(data_x) > batch_size):
         idx = np.random.choice(list(range(len(data_x)-batch_size +1)))
+        #print("---------------data index-------------",idx)
         return (data_x[idx: idx+batch_size], data_y[idx: idx+batch_size])
     else:
         return (data_x,data_y)
 
+def get_random_batch_sample(data_x, data_y, batch_size):
+    num_parts = len(data_x)//batch_size + 1
+    if(len(data_x) > batch_size):
+        batch_idx = np.random.choice(list(range(num_parts +1)))
+        sample_index = batch_idx*batch_size
+        if(sample_index + batch_size > len(data_x)):
+            return (data_x[sample_index:], data_y[sample_index:])
+        else:
+            return (data_x[sample_index: sample_index+batch_size], data_y[sample_index: sample_index+batch_size])
+    else:
+        return (data_x,data_y)
 
 def get_batch_sample(data, batch_size):
     data_x = data['x']
