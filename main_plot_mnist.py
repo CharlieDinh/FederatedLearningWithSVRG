@@ -7,7 +7,7 @@ import random
 import os
 import tensorflow as tf
 from flearn.utils.model_utils import read_data
-from flearn.utils.plot_utils import plot_summary_two_figures, plot_summary_one_figure, plot_summary_three_figures, plot_summary_three_figures_batch
+from flearn.utils.plot_utils import plot_summary_two_figures, plot_summary_one_figure, plot_summary_three_figures, plot_summary_three_figures_batch,plot_summary_one_figure2
 import matplotlib
 matplotlib.use('Agg')
 
@@ -116,7 +116,7 @@ def read_options(num_users=5, loc_ep=10, Numb_Glob_Iters=100, lamb=0, learning_r
             'flearn', 'models', parsed['dataset'], parsed['model'])
 
     # mod = importlib.import_module(model_path)
-    import flearn.models.mnist.mclr as mclr
+    import flearn.models.mnist.cnn as mclr
     mod = mclr
     learner = getattr(mod, 'Model')
 
@@ -162,20 +162,19 @@ if __name__ == '__main__':
 
     # Define parameter
 
-    algorithms_list = ["fedsarah","fedsvrg"]
-    lamb_value = [0.1, 0.1]
-    learning_rate = [0.001, 0.001]
-    local_ep = [10,10]
-    number_users = 100
-    Numb_Glob_I = 4
-    batch_size = [10,10]
+    algorithms_list = ["fedsarah","fedsvrg","fedsgd"]
+    lamb_value = [0.01, 0.01, 0]
+    learning_rate = [0.0005, 0.0005, 0.0005]
+    local_ep = [10,10,10]
+    number_users = 10
+    Numb_Glob_I = 1000
+    batch_size = [64,64,64]
     DATA_SET = "mnist"
-    number_users = 100
 
-    if(0): # 0 if dont need to train
+    if(1): # 0 if dont need to train
         for i in range(len(algorithms_list)):
             main(num_users=number_users, loc_ep=local_ep[i], Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value[i],learning_rate=learning_rate[i], alg=algorithms_list[i], batch_size=batch_size[i], dataset=DATA_SET)
 
-    plot_summary_one_figure(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
+    plot_summary_one_figure2(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
                                learning_rate=learning_rate, algorithms_list=algorithms_list, batch_size=batch_size, dataset=DATA_SET)
     print("-- FINISH -- :",)
