@@ -693,7 +693,7 @@ def plot_summary_one_figure2(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=
         algs_lbl[i] = algs_lbl[i]
     plt.figure(1)
     MIN = train_loss.min() - 0.001
-    start = 100
+    start = len(train_acc[i]) - 200
     linestyles = ['-', '--', '-.', ':', '-', '--', '-.', ':']
     for i in range(Numb_Algs):
         plt.plot(train_acc[i, 1:], linestyle=linestyles[i], label=algs_lbl[i] + str(lamb[i])+ "_"+str(loc_ep1[i])+"e" + "_" + str(batch_size[i]) + "b")

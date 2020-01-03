@@ -7,7 +7,7 @@ import random
 import os
 import tensorflow as tf
 from flearn.utils.model_utils import read_data
-from flearn.utils.plot_utils import plot_summary_two_figures, plot_summary_one_figure, plot_summary_three_figures, plot_summary_three_figures_batch
+from flearn.utils.plot_utils import plot_summary_two_figures, plot_summary_one_figure, plot_summary_three_figures, plot_summary_three_figures_batch, plot_two_figures_with_insets, plot_summary_one_figure2
 import matplotlib
 matplotlib.use('Agg')
 
@@ -162,20 +162,20 @@ if __name__ == '__main__':
 
     # Define parameter
 
-    algorithms_list = ["fedsgd", "fedsvrg", "fedsarah"]
-    lamb_value = [0, 0, 0]
-    learning_rate = [0.01, 0.01, 0.01]
-    local_ep = [10, 10, 10]
-    number_users = 10
-    Numb_Glob_I = 200
-    batch_size = [5, 5, 5]
+    algorithms_list = ["fedsgd", "fedsarah", "fedsvrg", "fedsgd", "fedsarah","fedsvrg", "fedsgd", "fedsarah", "fedsvrg", "fedsgd", "fedsarah", "fedsvrg"]
+    lamb_value = [0, 0.1, 0.1, 0, 0.1, 0.1, 0, 0.1, 0.1, 0, 0.1, 0.1]
+    learning_rate = [0.005, 0.005, 0.005, 0.005, 0.005, 0.005, 0.003, 0.003, 0.003, 0.003, 0.003, 0.003]
+    local_ep = [10, 10, 10, 10, 10, 10, 20, 20, 20, 20, 20, 20]
+    number_users = 100
+    Numb_Glob_I = 1000
+    batch_size = [64, 64, 64, 32, 32, 32, 64, 64, 64, 32, 32, 32]
     DATA_SET = "fashion_mnist"
     if(1):  # 0 if dont need to train
         for i in range(len(algorithms_list)):
             main(num_users=number_users, loc_ep=local_ep[i], Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value[i],
                  learning_rate=learning_rate[i], alg=algorithms_list[i], batch_size=batch_size[i], dataset=DATA_SET)
 
-    plot_summary_one_figure(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
+    plot_summary_one_figure2(num_users=number_users, loc_ep1=local_ep, Numb_Glob_Iters=Numb_Glob_I, lamb=lamb_value,
                             learning_rate=learning_rate, algorithms_list=algorithms_list, batch_size=batch_size, dataset=DATA_SET)
     print("-- FINISH -- :",)
 
