@@ -1,4 +1,4 @@
-# Federated Learning with Proximal Stochastic Variance Reduced Gradient Algorithm
+# Federated Learning with Proximal Stochastic Variance Reduced Gradient Algorithm (ICPP 2020)
 
 This repository is for the Experiment Section of the paper: "Federated Learning with Proximal Stochastic Variance Reduced Gradient Algorithm"
 
